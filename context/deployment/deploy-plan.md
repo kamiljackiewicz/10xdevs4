@@ -1,8 +1,8 @@
 ---
-project: med-lab-timeline
+project: 10x-med-lab-timeline
 approved_at: 2026-09-18
 deployment_target: cloudflare-workers
-status: accepted
+status: deployed-pending-human-acceptance
 ---
 
 # First deployment plan
@@ -57,11 +57,24 @@ in `wrangler.jsonc`, or supplied in chat.
   this MVP test flow.
 - Deployment accepted.
 
+## Phase 4 — Worker naming correction (complete 2026-09-18)
+
+- The approved production Worker name is `10x-med-lab-timeline`.
+- The original `10x-astro-starter` Worker and its
+  `10x-astro-starter-session` KV namespace were deleted after the replacement
+  Worker was verified.
+- New production URL: `https://10x-med-lab-timeline.kamil-jack.workers.dev`
+- Active version ID: `1f49186f-1290-427f-9f13-b599edf8d1a8`.
+- The new Worker has its own `10x-med-lab-timeline-session` KV namespace and
+  both Supabase secrets. Its root route returned HTTP `200`.
+- The name change creates a separate Worker and session store, so a human must
+  repeat the production authentication acceptance test against the new URL.
+
 ## Ownership and sequence
 
 | Step | Owner | Action | Completion evidence |
 |---|---|---|---|
-| 1 | Agent | Keep the existing Worker name `10x-astro-starter`, which is consistent with the package and repository. | `wrangler.jsonc` has the approved name. |
+| 1 | Agent | Use `10x-med-lab-timeline` as the Worker and application name. | `wrangler.jsonc` and package metadata use the approved name. |
 | 2 | Agent | Run validation. | `npm run lint` and `npm run build` succeed. |
 | 3 | Human | Confirm the logged-in Cloudflare account is the intended production account. | Account confirmation. |
 | 4 | Human | Create or select a production Supabase project; document its region and configure Auth, RLS, and private Storage before handling real data. | Project and safeguards confirmed. |
