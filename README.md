@@ -1,191 +1,90 @@
-# 10x Astro Starter
+# MedLabTimeline
 
-![](./public/template.png)
+MedLabTimeline helps a caregiver organize a child's blood-test history and prepare for medical consultations. It is designed to show caregiver-reviewed parameter changes alongside dated notes about treatment or recommendations; it does not interpret results, recommend treatment, or replace a doctor.
 
-A modern, opinionated starter template for building fast, accessible web applications.
+## Project status
 
-## Tech Stack
+The application currently includes the project foundation: email/password authentication, protected routes, and a Cloudflare Workers deployment. The first product milestone is planned publicly in the [GitHub issue backlog](https://github.com/kamiljackiewicz/10xdevs4/issues?q=is%3Aissue%20label%3Aroadmap), including patient profiles, dated notes, reviewed PDF import, chronological comparisons, and correction of approved results.
 
-- [Astro](https://astro.build/) v7 - Modern web framework with server-first rendering
-- [React](https://react.dev/) v19 - UI library for interactive components
-- [TypeScript](https://www.typescriptlang.org/) v6 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4 - Utility-first CSS framework
-- [Supabase](https://supabase.com/) - Authentication and backend-as-a-service
-- [Cloudflare Workers](https://workers.cloudflare.com/) - Edge deployment runtime
+The first end-to-end product flow is intentionally limited to a supported subset of blood-test PDFs and parameters. A caregiver must be able to review and correct extracted values before they become approved data.
 
-## Prerequisites
+## Technology
 
-- Node.js v22.23.2 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+- Astro, React, TypeScript, and Tailwind CSS
+- Supabase for authentication and planned private data storage
+- Cloudflare Workers for deployment
 
-## Getting Started
+## Get started
 
-1. Clone the repository:
+Prerequisites: Node.js 22.23.2, npm, Docker, and the Supabase CLI.
 
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
-
-2. Install dependencies:
-
-```bash
+git clone https://github.com/kamiljackiewicz/10xdevs4.git
+cd 10xdevs4
 npm install
 ```
 
-3. Set up Supabase and configure environment variables — see [Supabase Configuration](#supabase-configuration) below.
-
-4. Create a `.dev.vars` file for local Cloudflare dev secrets:
+For local development, start Supabase and create local-only environment files:
 
 ```bash
-cp .env.example .dev.vars
+npx supabase start
+npx supabase status -o env
 ```
 
-5. Run the development server:
+Set the reported API URL and anonymous key in ignored `.env` and `.dev.vars` files:
+
+```dotenv
+SUPABASE_URL=http://127.0.0.1:54321
+SUPABASE_KEY=<anon-key>
+```
+
+Then start the app:
 
 ```bash
 npm run dev
 ```
 
-## Available Scripts
-
-- `npm run dev` - Start development server (Cloudflare workerd runtime)
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint with type-checked rules
-- `npm run lint:fix` - Auto-fix ESLint issues
-- `npm run format` - Run Prettier
-- `npm run smoke` - Smoke test the auth flow against a running server (`BASE_URL`, defaults to `http://localhost:4321`)
-
-## Project Structure
-
-```md
-.
-├── src/
-│ ├── layouts/ # Astro layouts
-│ ├── pages/ # Astro pages
-│ │ └── api/ # API endpoints
-│ ├── components/ # UI components (Astro & React)
-│ └── assets/ # Static assets
-├── public/ # Public assets
-├── wrangler.jsonc # Cloudflare Workers config
-```
-
-## Supabase Configuration
-
-This project uses [Supabase](https://supabase.com/) for authentication. Environment variables are declared via Astro's `astro:env` schema and are treated as **server-only secrets** — they are never exposed to the client.
-
-### First-time setup (local, no cloud project needed)
-
-Requires [Docker](https://www.docker.com/) and ~7 GB RAM.
-
-1. Create your `.env` file:
-
-```bash
-cp .env.example .env
-```
-
-2. Initialize the local Supabase project (creates a `supabase/` config folder):
-
-```bash
-npx supabase init
-```
-
-3. Start the local stack (downloads Docker images on first run):
-
-```bash
-npx supabase start
-```
-
-4. Copy the credentials printed by the CLI into your `.env` and `.dev.vars`:
-
-```
-SUPABASE_URL=http://127.0.0.1:54321
-SUPABASE_KEY=<anon key from CLI output>
-```
-
-5. To stop the stack when done:
+Local Supabase services can be stopped with:
 
 ```bash
 npx supabase stop
 ```
 
-The local Studio UI is available at `http://localhost:54323`.
-
-No database tables or migrations are required — this project uses Supabase Auth's built-in `auth.users` table only.
-
-### Using a cloud Supabase project instead
-
-If you prefer to use a hosted Supabase project, add these variables to your `.env` and `.dev.vars` files:
-
-| Variable       | Description                                                |
-| -------------- | ---------------------------------------------------------- |
-| `SUPABASE_URL` | Project URL from Supabase dashboard → Settings → API       |
-| `SUPABASE_KEY` | `anon` public key from Supabase dashboard → Settings → API |
-
-```
-SUPABASE_URL=https://<project-ref>.supabase.co
-SUPABASE_KEY=<anon-key>
-```
-
-### Email confirmation in local development
-
-By default Supabase requires email confirmation before a user can sign in. To skip this during local development:
-
-1. Open the Supabase dashboard for your project
-2. Go to **Authentication → Email → Confirm email**
-3. Toggle it **off**
-
-Users can then sign in immediately after sign-up without clicking a confirmation link.
-
-### Auth routes
-
-| Route                 | Description                                                             |
-| --------------------- | ----------------------------------------------------------------------- |
-| `/auth/signin`        | Email/password sign-in form                                             |
-| `/auth/signup`        | Email/password sign-up form                                             |
-| `/auth/confirm-email` | Post-signup "check your inbox" page                                     |
-| `/dashboard`          | Example protected page (redirects to `/auth/signin` if unauthenticated) |
-
-Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
-
-## Deployment
-
-This project deploys to [Cloudflare Workers](https://workers.cloudflare.com/).
-
-1. Build the project:
+## Commands
 
 ```bash
+npm run lint
 npm run build
-```
-
-2. Deploy with Wrangler:
-
-```bash
-npx wrangler deploy
-```
-
-Set `SUPABASE_URL` and `SUPABASE_KEY` as secrets in your Cloudflare dashboard or via `npx wrangler secret put`.
-
-## Smoke test
-
-`scripts/smoke.mjs` is a dependency-free Node script that walks the whole auth flow (sign-up, sign-in, protected page, sign-out) over HTTP. Run it against the dev server or the production preview after dependency upgrades:
-
-```bash
-npm run dev            # or: npm run build && npm run preview
+npm run preview
 BASE_URL=http://localhost:4321 npm run smoke
 ```
 
-It needs a reachable Supabase instance (local or cloud) with email confirmation disabled.
+`npm run smoke` verifies the authentication flow against a running local or preview application. It requires a reachable Supabase instance with email confirmation disabled for the test account flow.
 
-> **Note:** this script exists primarily to guard the development of the starter itself — it is a fast sanity check that dependency upgrades did not break the build, the Cloudflare adapter or the Supabase auth flow. It is **not** a substitute for a real test suite. Once you build your own product on top of this starter, add proper tests (unit, integration, end-to-end) suited to your application.
+## Deployment
 
-## CI
+The application is deployed as a Cloudflare Worker. Never add real credentials to the repository, `wrangler.jsonc`, or public issue discussions.
 
-GitHub Actions runs two jobs on every push and PR to `master`:
+Before a production deployment, set the server-side secrets through Wrangler's interactive prompt:
 
-- **ci** — lint, `astro check` and build. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step.
-- **smoke** — starts a local Supabase via the Supabase CLI, builds, serves the production preview on the Cloudflare runtime and runs `npm run smoke` against it. No secrets required.
+```bash
+npx wrangler secret put SUPABASE_URL
+npx wrangler secret put SUPABASE_KEY
+npx wrangler deploy
+```
+
+Use `npx wrangler deploy` for this project; it is a Workers deployment, not a Cloudflare Pages deployment.
+
+## Product and privacy boundaries
+
+- The MVP covers blood-test results only; EEG and universal laboratory support are outside its first scope.
+- The application presents a chronological record and comparability warnings, never medical conclusions.
+- Each caregiver accesses only their own single-patient profile in the MVP; profile sharing is deferred.
+- Do not use real patient data until Supabase access policies, private Storage, data region, and retention decisions have been reviewed.
+
+## Contributing
+
+Read [Repository Guidelines](AGENTS.md) before making a change. The source product requirements and the current technical roadmap live in [`context/foundation/`](context/foundation/).
 
 ## License
 
