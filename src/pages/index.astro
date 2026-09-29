@@ -1,8 +1,9 @@
 ---
 import Welcome from "@/components/Welcome.astro";
 import Layout from "@/layouts/Layout.astro";
+Astro.response.headers.set("Cache-Control", "private, no-store");
 ---
 
-<Layout>
+<Layout title="MedLab Timeline">
   <Welcome />
 </Layout>

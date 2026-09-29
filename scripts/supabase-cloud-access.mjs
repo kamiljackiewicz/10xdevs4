@@ -13,6 +13,7 @@ const anonKey = process.env.SUPABASE_KEY;
 const serviceRoleKey = process.env.SUPABASE_TEST_SERVICE_ROLE_KEY;
 const runId = `${Date.now()}-${randomUUID().slice(0, 8)}`;
 const password = `PatientAccess-${randomUUID()}!`;
+const profile = { first_name: "Test", last_name: "Synthetic", date_of_birth: "2000-01-01", sex: "female" };
 const ownerEmail = `patient-access-owner-${runId}@example.invalid`;
 const otherEmail = `patient-access-other-${runId}@example.invalid`;
 const admin = createClient(url, serviceRoleKey, {
@@ -88,7 +89,7 @@ try {
 
   const { data: patient, error: createPatientError } = await ownerClient
     .from("patients")
-    .insert({})
+    .insert(profile)
     .select("id")
     .single();
   if (createPatientError || !patient) {
@@ -114,7 +115,9 @@ try {
     .eq("id", patientId);
   assert(!otherReadError && otherPatients?.length === 0, "Non-owner could read a patient");
 
-  const { error: otherInsertError } = await otherClient.from("patients").insert({ owner_id: createdUserIds[0] });
+  const { error: otherInsertError } = await otherClient
+    .from("patients")
+    .insert({ ...profile, owner_id: createdUserIds[0] });
   assert(otherInsertError, "Non-owner could create a patient for another user");
 
   const { data: otherUpdate, error: otherUpdateError } = await otherClient

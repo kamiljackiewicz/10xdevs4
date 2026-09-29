@@ -24,7 +24,7 @@ has a persistent PL/EN switch with Polish as the default.
 
 | Decision | Choice | Why | Source |
 | --- | --- | --- | --- |
-| Data | Required first name, birth date, sex | Agreed profile scope | Plan |
+| Data | Required first name, last name, birth date, sex | Corrected original requirement | Plan |
 | Sex | Required `female` / `male` | Explicit two-choice selection | Plan |
 | Editing | Available immediately | Caregiver can correct mistakes | Plan |
 | Placement | Dashboard | Uses the existing protected entry point | Plan |
@@ -47,9 +47,15 @@ Typed dictionaries serve Astro pages and React forms; a validated cookie selects
 the language. The existing authenticated SSR client writes profile data under
 RLS. A new additive migration preserves existing patient IDs and ownership.
 Incomplete old roots receive a profile-completion state without fabricated data.
-New writes require all three fields through an initially unvalidated database
+New writes require all four fields through initially unvalidated database
 constraint, preserving untouched old roots. POST creates and PATCH edits the
 session owner's profile; invalid input stays in the form for correction.
+The dashboard always provides a top-of-panel Home link returning to the homepage,
+including after a successful save. Existing profiles without a surname require
+completion without changing their IDs.
+The UI review follow-up adds readable localized dates, a dark native calendar,
+and a minimal product homepage with session-appropriate navigation instead of
+starter marketing. Native date-input formatting remains browser-controlled.
 
 ## Phases at a Glance
 

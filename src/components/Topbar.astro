@@ -4,11 +4,11 @@ const { user } = Astro.locals;
 const t = messages[Astro.locals.locale];
 ---
 
-<div class="mb-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80">
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80">
   {user ? (
     <>
-      <span class="text-blue-100/70">{user.email}</span>
-      <div class="flex items-center gap-3">
+      <span class="min-w-0 break-all text-blue-100/70">{user.email}</span>
+      <div class="flex flex-wrap items-center gap-3">
         <a href="/dashboard" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
           {t.dashboard}
         </a>
@@ -22,7 +22,7 @@ const t = messages[Astro.locals.locale];
   ) : (
     <>
       <span class="text-blue-100/70">{t.notSignedIn}</span>
-      <div class="flex gap-3">
+      <div class="flex flex-wrap gap-3">
         <a href="/auth/signin" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
           {t.signIn}
         </a>

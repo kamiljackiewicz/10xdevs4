@@ -17,7 +17,7 @@ exist; the user requires the same Supabase Cloud project, without local Supabase
 ## Desired End State
 
 An authenticated caregiver sees a create form when no profile exists and their
-profile with an edit action after saving. First name, date of birth and sex are
+profile with an edit action after saving. First name, last name, date of birth and sex are
 required. Refreshing preserves the profile. A second caregiver cannot access it.
 All current application screens, validation and application error messages support
 PL/EN. The language choice survives navigation and refresh.
@@ -36,7 +36,7 @@ PL/EN. The language choice survives navigation and refresh.
 
 - Sharing, multiple patients, deleting profiles or medical interpretation.
 - Importing PDFs, timeline notes, results or comparisons.
-- Additional profile data such as diagnoses or surname.
+- Additional profile data such as diagnoses.
 - Local Supabase, Docker, localized URLs or an external i18n library.
 - Translating Supabase email templates or rewriting the landing-page product copy.
 
@@ -125,18 +125,18 @@ Extend the Cloud schema and replace the dashboard placeholder with the profile f
 
 **File**: `supabase/migrations/<timestamp>_patient_profile.sql`
 
-**Intent**: Store the three agreed profile fields on the existing ownership root.
+**Intent**: Store the four required profile fields on the existing ownership root.
 
-**Contract**: Add `first_name`, `date_of_birth` (PostgreSQL `date`) and `sex`
-(`female` or `male`). Completed profiles require all three fields; reject blank
+**Contract**: Add `first_name`, `last_name`, `date_of_birth` (PostgreSQL `date`) and `sex`
+(`female` or `male`). Completed profiles require all four fields; reject blank
 names, invalid/future birth dates and unsupported sex values. Preserve owner
 uniqueness and RLS. Apply the migration to the approved Cloud project before
 running profile code against it. Update existing test fixtures for the new fields.
-Use nullable added columns plus an explicit `CHECK ... NOT VALID` requiring all
-three valid values on every new insert or update. This preserves untouched legacy
+Use nullable added columns plus explicit `CHECK ... NOT VALID` constraints requiring all
+four valid values on every new insert or update. This preserves untouched legacy
 roots without fabricated data, while all subsequent writes must complete them;
 do not validate the constraint against old roots until they have been completed.
-Use text first names trimmed to 1–100 characters and compare birth dates to today's
+Use text first and last names trimmed to 1–100 Unicode code points and compare birth dates to today's
 UTC calendar date consistently in validation. The completion UI updates the
 existing root rather than inserting a second one. Include
 `scripts/supabase-cloud-access.mjs` fixture updates in this phase before Cloud CI.
@@ -149,7 +149,7 @@ existing root rather than inserting a second one. Include
 **Intent**: Let the caregiver create and correct their profile without leaving the dashboard.
 
 **Contract**: Show create/completion, read and edit states in PL/EN. Validate required
-first name, a real non-future calendar date and the two-value sex choice on the
+first and last names, a real non-future calendar date and the two-value sex choice on the
 server as well as in the form. Store the date without timezone conversion. The
 write endpoint verifies authentication, selects allowed profile fields only and
 uses the session-bound client. Distinguish creation from updating so a duplicate
@@ -158,7 +158,7 @@ with a clear existing-profile response. Show safe errors and retain entered form
 values on failure. Successful writes refresh the displayed persisted profile;
 editing preserves the patient ID and updates its timestamp.
 Use JSON POST `/api/patient` for creation and PATCH for editing/completion; only
-`first_name`, `date_of_birth`, `sex` are writable. Select the target through the
+`first_name`, `last_name`, `date_of_birth`, `sex` are writable. Select the target through the
 session owner, not a submitted patient ID. Return 201/200 on success, 400 with
 stable field error codes for invalid input, 401 without a session, 409 on duplicate
 creation and 404 when editing a missing root. Handle other failures with a generic
@@ -262,6 +262,39 @@ place. Production deployment is separate from this implementation plan.
 - Planning conversation: required name/date/sex, two sex choices, editing,
   dashboard placement, whole-application PL/EN and three approved phases.
 
+## Requirements correction — Phase 2
+
+The original requirements mistakenly omitted last name. The corrected requirement
+is separate required first and last names, not a scope extension. At the user's
+request, the contracts above reflect that correction. The two profile SQL files
+were consolidated into `20260929194000_patient_profile.sql` at the user's request;
+Cloud tracking was synchronized without rerunning SQL or changing patient data.
+The profile also needs a persistent route back to the homepage after saving.
+
+- Add `last_name` to the profile input, selected data, form and read view in PL/EN.
+  It is required, trimmed and limited to 1–100 Unicode code points, like first name.
+- Include surname in the consolidated additive profile migration.
+  Preserve existing records without inventing surnames; a separate `CHECK ... NOT VALID`
+  requires a valid surname on future inserts/updates. Existing profiles missing it
+  enter the completion state, preserving their IDs and other values.
+- Allow only `first_name`, `last_name`, `date_of_birth`, `sex` in profile writes;
+  update Cloud test fixtures and validation tests accordingly.
+- Show a persistent “Zamknij panel / Close panel” link to `/` on the dashboard,
+  outside form/state branches, including after save and when loading fails.
+- Repeat phase 2 automated verification and manually confirm surname persistence,
+  editing, and closing the panel after saving in both languages.
+
+### Approved UI review follow-up
+
+The user approved the Chrome review fixes: move the persistent homepage link to
+the top of the panel, improve the native date picker's dark-theme contrast, and
+show a localized, unambiguous birth date in the read view and alongside the native
+date input (whose format is controlled by the browser). Replace starter marketing
+with a minimal PL/EN patient-profile landing page and show authenticated users a
+dashboard action instead of sign-in/sign-up calls to action. This supersedes the
+landing-copy exclusion above. No new medical features or authentication semantics
+are introduced; the personalized homepage must not be cached publicly.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles.
@@ -270,24 +303,24 @@ place. Production deployment is separate from this implementation plan.
 
 #### Automated
 
-- [x] 1.1 Locale selection, invalid-locale fallback, dictionary parity and safe redirects pass focused tests.
-- [x] 1.2 Lint, Astro check and production build pass for the localized application.
+- [x] 1.1 Locale selection, invalid-locale fallback, dictionary parity and safe redirects pass focused tests. — 62a1ac7
+- [x] 1.2 Lint, Astro check and production build pass for the localized application. — 62a1ac7
 
 #### Manual
 
-- [x] 1.3 All current screens render in PL and EN, including validation, and preserve the language across navigation.
+- [x] 1.3 All current screens render in PL and EN, including validation, and preserve the language across navigation. — 62a1ac7
 
 ### Phase 2: Private profile creation and editing
 
 #### Automated
 
-- [ ] 2.1 The additive profile migration applies to Supabase Cloud and preserves ownership policies.
-- [ ] 2.2 Profile validation rejects missing fields, invalid/future dates and unsupported sex values.
-- [ ] 2.3 Lint, Astro check and production build pass for profile creation and editing.
+- [x] 2.1 The additive profile migration applies to Supabase Cloud and preserves ownership policies.
+- [x] 2.2 Profile validation rejects missing fields, invalid/future dates and unsupported sex values.
+- [x] 2.3 Lint, Astro check and production build pass for profile creation and editing.
 
 #### Manual
 
-- [ ] 2.4 A caregiver creates, reloads and edits a profile on the dashboard in both languages.
+- [x] 2.4 A caregiver creates, reloads and edits a profile on the dashboard in both languages.
 
 ### Phase 3: Cloud isolation and application verification
 

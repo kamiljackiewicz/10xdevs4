@@ -1,6 +1,22 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { authErrorMessage, isLocale, mapAuthError, messages, resolveLocale, safeReturnPath } from "../src/lib/i18n.ts";
+import {
+  authErrorMessage,
+  formatProfileDate,
+  isLocale,
+  mapAuthError,
+  messages,
+  resolveLocale,
+  safeReturnPath,
+} from "../src/lib/i18n.ts";
+
+test("profile dates are localized without changing the calendar day and tolerate empty or invalid values", () => {
+  assert.equal(formatProfileDate("2000-02-29", "pl"), "29 lutego 2000");
+  assert.equal(formatProfileDate("2000-02-29", "en"), "29 February 2000");
+  for (const value of [null, "", "invalid", "2025-02-29", "2025-13-01"]) {
+    assert.equal(formatProfileDate(value, "pl"), "");
+  }
+});
 
 test("only Polish and English are selectable; an absent or invalid preference defaults to Polish", () => {
   for (const locale of ["pl", "en"]) {

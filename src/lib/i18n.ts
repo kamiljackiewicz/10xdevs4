@@ -13,13 +13,10 @@ const en = {
   notSignedIn: "Not signed in",
   welcome: "Welcome,",
   protectedPage: "This page is only for authenticated users.",
-  tagline: "A production-ready starter with authentication, modern tooling, and a cosmic developer experience.",
-  authReady: "Authentication Ready",
-  authDescription: "Built-in Supabase auth with sign in, sign up, and protected routes out of the box.",
-  modernStack: "Modern Stack",
-  stackDescription: "Astro 7, React 19, Tailwind 4, and TypeScript — the latest tools, ready to go.",
-  developerExperience: "Developer Experience",
-  developerDescription: "ESLint, Prettier, and pre-commit hooks keep your codebase clean from day one.",
+  homeDescription: "Create a private patient profile and keep their basic information up to date.",
+  homeProfileDescription:
+    "Save a first name, last name, date of birth and sex. View and edit the profile in your dashboard.",
+  openDashboard: "Open dashboard",
   noAccount: "Don't have an account?",
   hasAccount: "Already have an account?",
   email: "Email",
@@ -55,6 +52,32 @@ const en = {
   errorSignupUnavailable: "We couldn't create your account. Please try again later.",
   errorNotConfigured: "Authentication is currently unavailable.",
   errorInvalidLocale: "Unsupported language.",
+  patientProfile: "Patient profile",
+  createProfile: "Create profile",
+  completeProfile: "Complete your profile",
+  completeProfileHint: "Add the missing information to your existing patient profile.",
+  editProfile: "Edit profile",
+  saveProfile: "Save profile",
+  savingProfile: "Saving...",
+  cancel: "Cancel",
+  firstName: "First name",
+  lastName: "Last name",
+  home: "Home",
+  dateOfBirth: "Date of birth",
+  sex: "Sex",
+  chooseSex: "Select sex",
+  female: "Female",
+  male: "Male",
+  profileRequired: "This field is required.",
+  profileNameTooLong: "Each name must be at most 100 characters.",
+  profileDateInvalid: "Enter a valid calendar date.",
+  profileDateFuture: "Date of birth cannot be in the future.",
+  profileSexInvalid: "Select female or male.",
+  profileExists: "A profile already exists. Reload the page to view or edit it.",
+  profileNotFound: "The profile no longer exists. Reload the page to create it.",
+  profileUnauthorized: "Your session has expired. Sign in again before saving.",
+  profileLoadFailed: "We couldn't load your profile. Please reload the page.",
+  reloadPage: "Reload page",
 };
 
 export type Messages = typeof en;
@@ -72,13 +95,9 @@ const pl: Messages = {
   notSignedIn: "Nie zalogowano",
   welcome: "Witaj,",
   protectedPage: "Ta strona jest dostępna tylko dla zalogowanych użytkowników.",
-  tagline: "Gotowy do wdrożenia starter z uwierzytelnianiem, nowoczesnymi narzędziami i kosmicznym komfortem pracy.",
-  authReady: "Gotowe uwierzytelnianie",
-  authDescription: "Wbudowane uwierzytelnianie Supabase z logowaniem, rejestracją i chronionymi stronami.",
-  modernStack: "Nowoczesne technologie",
-  stackDescription: "Astro 7, React 19, Tailwind 4 i TypeScript — najnowsze narzędzia, gotowe do pracy.",
-  developerExperience: "Komfort pracy programisty",
-  developerDescription: "ESLint, Prettier i hooki pre-commit dbają o porządek w kodzie od pierwszego dnia.",
+  homeDescription: "Utwórz prywatny profil pacjenta i aktualizuj jego podstawowe dane.",
+  homeProfileDescription: "Zapisz imię, nazwisko, datę urodzenia i płeć. Przeglądaj i edytuj profil w swoim panelu.",
+  openDashboard: "Otwórz panel",
   noAccount: "Nie masz konta?",
   hasAccount: "Masz już konto?",
   email: "Adres e-mail",
@@ -114,9 +133,48 @@ const pl: Messages = {
   errorSignupUnavailable: "Nie udało się utworzyć konta. Spróbuj ponownie później.",
   errorNotConfigured: "Uwierzytelnianie jest obecnie niedostępne.",
   errorInvalidLocale: "Nieobsługiwany język.",
+  patientProfile: "Profil pacjenta",
+  createProfile: "Utwórz profil",
+  completeProfile: "Uzupełnij profil",
+  completeProfileHint: "Dodaj brakujące informacje do istniejącego profilu pacjenta.",
+  editProfile: "Edytuj profil",
+  saveProfile: "Zapisz profil",
+  savingProfile: "Zapisywanie...",
+  cancel: "Anuluj",
+  firstName: "Imię",
+  lastName: "Nazwisko",
+  home: "Strona główna",
+  dateOfBirth: "Data urodzenia",
+  sex: "Płeć",
+  chooseSex: "Wybierz płeć",
+  female: "Kobieta",
+  male: "Mężczyzna",
+  profileRequired: "To pole jest wymagane.",
+  profileNameTooLong: "Imię i nazwisko mogą mieć po najwyżej 100 znaków.",
+  profileDateInvalid: "Wpisz poprawną datę kalendarzową.",
+  profileDateFuture: "Data urodzenia nie może być w przyszłości.",
+  profileSexInvalid: "Wybierz kobietę lub mężczyznę.",
+  profileExists: "Profil już istnieje. Odśwież stronę, aby go wyświetlić lub edytować.",
+  profileNotFound: "Profil już nie istnieje. Odśwież stronę, aby go utworzyć.",
+  profileUnauthorized: "Sesja wygasła. Zaloguj się ponownie przed zapisaniem.",
+  profileLoadFailed: "Nie udało się wczytać profilu. Odśwież stronę.",
+  reloadPage: "Odśwież stronę",
 };
 
 export const messages: Readonly<Record<Locale, Readonly<Messages>>> = { pl, en };
+
+// Date-only values are displayed in UTC so the calendar day never shifts.
+export function formatProfileDate(value: string | null, locale: Locale): string {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return "";
+  const date = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) return "";
+  return new Intl.DateTimeFormat(locale === "pl" ? "pl-PL" : "en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
 
 export function isLocale(value: unknown): value is Locale {
   return value === "pl" || value === "en";
