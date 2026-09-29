@@ -18,12 +18,20 @@ const { user } = Astro.locals;
     </section>
     <div class="flex flex-col justify-center gap-4 sm:flex-row">
       {user ? (
-        <a
-          href="/dashboard"
-          class="rounded-lg bg-purple-600 px-6 py-3 font-medium text-white transition-colors hover:bg-purple-500"
-        >
-          {t.openDashboard}
-        </a>
+        <>
+          <a
+            href="/dashboard"
+            class="rounded-lg bg-purple-600 px-6 py-3 font-medium text-white transition-colors hover:bg-purple-500"
+          >
+            {t.openDashboard}
+          </a>
+          <a
+            href="/dashboard/timeline"
+            class="rounded-lg border border-purple-300/50 bg-purple-500/15 px-6 py-3 font-medium text-purple-100 transition-colors hover:border-purple-200 hover:bg-purple-500/30 hover:text-white"
+          >
+            {t.openTimeline}
+          </a>
+        </>
       ) : (
         <>
           <a

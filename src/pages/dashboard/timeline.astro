@@ -1,0 +1,89 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import TimelineNotes from "@/components/patient/TimelineNotes";
+import { messages } from "@/lib/i18n";
+import { createClient } from "@/lib/supabase";
+import { timelineNoteColumns, type TimelineNote } from "@/lib/timeline-notes";
+import type { Patient } from "@/lib/patient-profile";
+
+const t = messages[Astro.locals.locale];
+Astro.response.headers.set("Cache-Control", "private, no-store");
+const requestedPage = Number.parseInt(Astro.url.searchParams.get("page") ?? "1", 10);
+const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+const limit = 50;
+let patient: Patient | null = null;
+let notes: TimelineNote[] = [];
+let loadFailed = false;
+try {
+  const supabase = createClient(Astro.request.headers, Astro.cookies);
+  if (!supabase || !Astro.locals.user) loadFailed = true;
+  else {
+    const profile = await supabase
+      .from("patients")
+      .select("id,first_name,last_name,date_of_birth,sex,created_at,updated_at")
+      .eq("owner_id", Astro.locals.user.id)
+      .maybeSingle<Patient>();
+    patient = profile.data;
+    if (profile.error) loadFailed = true;
+    if (patient) {
+      const result = await supabase
+        .from("timeline_notes")
+        .select(timelineNoteColumns)
+        .eq("patient_id", patient.id)
+        .order("event_date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .range((page - 1) * limit, page * limit);
+      notes = result.data ?? [];
+      loadFailed ||= Boolean(result.error);
+    }
+  }
+} catch {
+  loadFailed = true;
+}
+const hasNext = notes.length > limit;
+if (hasNext) notes = notes.slice(0, limit);
+---
+
+<Layout title={t.timeline}>
+  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
+    <div class="w-full max-w-2xl rounded-2xl border border-white/10 bg-white/10 p-8 text-white backdrop-blur-xl">
+      <a href="/" class="text-sm text-purple-200 hover:text-white hover:underline">
+        <span aria-hidden="true">← </span>
+        {t.home}
+      </a>
+      <h1 class="mt-5 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
+        {t.timeline}
+      </h1>
+      {loadFailed ? (
+        <p role="alert" class="mt-6 text-red-300">
+          {t.timelineLoadFailed}
+        </p>
+      ) : !patient ? (
+        <p class="mt-6 text-blue-100/80">
+          {t.createProfileBeforeTimeline}{" "}
+          <a class="underline" href="/dashboard">
+            {t.createProfile}
+          </a>
+        </p>
+      ) : !patient.date_of_birth ? (
+        <p class="mt-6 text-blue-100/80">
+          {t.timelineBirthDateRequired}{" "}
+          <a class="underline" href="/dashboard">
+            {t.editProfile}
+          </a>
+        </p>
+      ) : (
+        <TimelineNotes
+          client:load
+          notes={notes}
+          birthDate={patient.date_of_birth}
+          messages={t}
+          locale={Astro.locals.locale}
+          page={page}
+          hasNext={hasNext}
+        />
+      )}
+    </div>
+  </div>
+</Layout>

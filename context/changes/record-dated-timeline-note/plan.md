@@ -182,20 +182,20 @@ The migration is additive and needs no backfill. Apply it to the approved Supaba
 
 #### Automated
 
-- [x] 1.1 Unit tests cover validation, normalization, and the 5000-code-point limit.
-- [x] 1.2 Migration and Cloud tests prove CRUD, isolation, immutable metadata, and cascade cleanup.
-- [x] 1.3 Lint, Astro check, and production build pass.
+- [x] 1.1 Unit tests cover validation, normalization, and the 5000-code-point limit. — 934eefe
+- [x] 1.2 Migration and Cloud tests prove CRUD, isolation, immutable metadata, and cascade cleanup. — 934eefe
+- [x] 1.3 Lint, Astro check, and production build pass. — 934eefe
 
 ### Phase 2: API and separate timeline
 
 #### Automated
 
-- [ ] 2.1 HTTP tests prove API contracts, request guards, and SSR-visible CRUD.
-- [ ] 2.2 Lint, unit tests, Astro check, and production build pass.
+- [x] 2.1 HTTP tests prove API contracts, request guards, and SSR-visible CRUD.
+- [x] 2.2 Lint, unit tests, Astro check, and production build pass.
 
 #### Manual
 
-- [ ] 2.3 PL/EN navigation, forms, confirmation, keyboard flow, and draft retention work.
+- [x] 2.3 PL/EN navigation, forms, confirmation, keyboard flow, and draft retention work.
 
 ### Phase 3: End-to-end verification
 

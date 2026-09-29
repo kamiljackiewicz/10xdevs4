@@ -60,6 +60,12 @@ async function api(method, json, status, options = {}) {
   assert(response.headers.get("cache-control") === "private, no-store", "Patient response is cacheable");
   return JSON.parse(response.body);
 }
+async function timelineApi(path, method, json, status, options = {}) {
+  const response = await request(path, { method, json, ...options });
+  expect(response, status);
+  assert(response.headers.get("cache-control") === "private, no-store", "Timeline response is cacheable");
+  return response.body ? JSON.parse(response.body) : null;
+}
 async function rendered(expected, locale) {
   const response = await request("/dashboard");
   expect(response, 200);
@@ -167,6 +173,35 @@ try {
     );
     await rendered(profile, "pl");
     await rendered(profile, "pl");
+  });
+  await step("timeline note API guards and CRUD persist in SSR", async () => {
+    const note = { event_date: profile.date_of_birth, body: "  first\r\nnote  " };
+    assert(
+      (await timelineApi("/api/timeline-notes", "POST", note, 403, { origin: "https://foreign.invalid" })).error ===
+        "invalid_origin",
+      "Timeline origin guard missing",
+    );
+    assert(
+      (await timelineApi("/api/timeline-notes", "POST", note, 415, { contentType: "text/plain" })).error ===
+        "invalid_content_type",
+      "Timeline content-type guard missing",
+    );
+    const createdNote = await timelineApi("/api/timeline-notes", "POST", { ...note, patient_id: randomUUID() }, 201);
+    assert(createdNote.note.body === "first\nnote", "Timeline note normalization failed");
+    const timeline = await request("/dashboard/timeline");
+    expect(timeline, 200);
+    assert(timeline.body.includes("first\nnote"), "Timeline note not server rendered");
+    const editedNote = await timelineApi(
+      `/api/timeline-notes/${createdNote.note.id}`,
+      "PATCH",
+      { event_date: "2001-01-02", body: "edited" },
+      200,
+    );
+    assert(editedNote.note.body === "edited", "Timeline note edit failed");
+    await timelineApi(`/api/timeline-notes/${createdNote.note.id}`, "DELETE", undefined, 204);
+    const afterDelete = await request("/dashboard/timeline");
+    expect(afterDelete, 200);
+    assert(!afterDelete.body.includes("edited"), "Timeline note delete did not persist");
   });
   await step("duplicate create rejected without overwriting", async () => {
     assert((await api("POST", edited, 409)).error === "profile_exists", "Duplicate create code missing");
