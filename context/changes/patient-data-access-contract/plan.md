@@ -254,10 +254,10 @@ region, retention, and privacy controls are separately approved.
 
 #### Automated
 
-- [ ] 3.1 Add and run two-user database and Storage isolation tests
-- [ ] 3.2 Run the isolation test in CI with Supabase Cloud
-- [ ] 3.3 Pass lint, build, and the existing authentication smoke test
+- [x] 3.1 Add and run two-user database and Storage isolation tests — 6ba14b9
+- [x] 3.2 Run the isolation test in CI with Supabase Cloud — 6ba14b9
+- [x] 3.3 Pass lint, build, and the existing authentication smoke test — 6ba14b9
 
 #### Manual
 
-- [ ] 3.4 Confirm CI uses only temporary Cloud test identities and objects
+- [x] 3.4 Confirm CI uses only temporary Cloud test identities and objects — 6ba14b9
