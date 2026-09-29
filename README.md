@@ -16,7 +16,8 @@ The first end-to-end product flow is intentionally limited to a supported subset
 
 ## Get started
 
-Prerequisites: Node.js 22.23.2, npm, Docker, and the Supabase CLI.
+Prerequisites: Node.js 22.23.2, npm, access to the approved Supabase Cloud
+project, and the Supabase CLI.
 
 ```bash
 git clone https://github.com/kamiljackiewicz/10xdevs4.git
@@ -24,30 +25,25 @@ cd 10xdevs4
 npm install
 ```
 
-For local development, start Supabase and create local-only environment files:
+Log in and link the approved Cloud project:
 
 ```bash
-npx supabase start
-npx supabase status -o env
+npx supabase login
+npx supabase link --project-ref <project-ref>
 ```
 
-Set the reported API URL and anonymous key in ignored `.env` and `.dev.vars` files:
+Set the Cloud project URL and publishable (or legacy anonymous) key in ignored
+`.env` and `.dev.vars` files. Never commit either file:
 
 ```dotenv
-SUPABASE_URL=http://127.0.0.1:54321
-SUPABASE_KEY=<anon-key>
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_KEY=<publishable-or-anon-key>
 ```
 
 Then start the app:
 
 ```bash
 npm run dev
-```
-
-Local Supabase services can be stopped with:
-
-```bash
-npx supabase stop
 ```
 
 ## Commands
@@ -59,7 +55,10 @@ npm run preview
 BASE_URL=http://localhost:4321 npm run smoke
 ```
 
-`npm run smoke` verifies the authentication flow against a running local or preview application. It requires a reachable Supabase instance with email confirmation disabled for the test account flow.
+`npm run smoke` verifies the authentication flow against a running local or preview
+application connected to Supabase Cloud. In CI, the test-only
+`SUPABASE_TEST_SERVICE_ROLE_KEY` removes its temporary test account afterwards;
+this key is never used by the application or exposed to browsers.
 
 ## Deployment
 

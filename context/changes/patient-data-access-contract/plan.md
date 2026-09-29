@@ -15,7 +15,7 @@ future API or Supabase client.
 
 ## Desired End State
 
-A local or deployed Supabase database can represent one owner-bound patient root
+A Supabase Cloud database can represent one owner-bound patient root
 per authenticated caregiver. RLS and private Storage policies deny cross-user
 access. Later slices have a durable contract for patient ownership, review-before-
 approval, and permanent deletion without prematurely adding their UI or tables.
@@ -43,9 +43,9 @@ approval, and permanent deletion without prematurely adding their UI or tables.
 Use Supabase migrations as the source of truth. A minimal `patients` root stores
 only identity and ownership; a unique owner constraint enforces the single-patient
 MVP rule. RLS and Storage policies always derive permission from `auth.uid()` and
-the patient UUID embedded in a document object's key. Database tests impersonate
-two authenticated users, and CI executes them separately from the existing HTTP
-auth smoke test.
+the patient UUID embedded in a document object's key. Cloud integration tests
+create two temporary authenticated users through a test-only administrative client,
+and CI executes them separately from the existing HTTP auth smoke test.
 
 ## Critical Implementation Details
 
@@ -91,7 +91,7 @@ table.
 
 #### Automated Verification
 
-- The migration applies cleanly to a reset local Supabase database.
+- The migration applies cleanly to the linked Supabase Cloud project.
 - The migration creates `patients`, enables RLS, creates the private bucket, and
   installs all required table and object policies.
 
@@ -101,7 +101,7 @@ table.
   migration objects; no patient-facing page or endpoint is introduced.
 
 **Implementation Note**: Pause after the automated checks for human confirmation
-of the local database and bucket inspection before proceeding.
+of the Cloud database and bucket inspection before proceeding.
 
 ---
 
@@ -153,40 +153,45 @@ Make the data-access boundary reproducible and continuously checked.
 
 #### 1. Two-user database and Storage policy tests
 
-**Files**: `supabase/tests/<patient-access-test-file>`, `package.json`
+**Files**: `scripts/supabase-cloud-access.mjs`, `package.json`
 
 **Intent**: Prove policies deny cross-user access rather than relying on code
 review or Studio inspection.
 
-**Contract**: Add a runnable test command that provisions two authenticated test
-identities and verifies owner-only patient CRUD plus owner-only Storage object
-read/write/update/delete. It must demonstrate denial for the non-owner and clean
-up its test rows and objects. Reuse the repository's local Supabase CLI workflow;
-do not require production credentials.
+**Contract**: Add a runnable Cloud test command that provisions two authenticated
+test identities in the approved Cloud project and verifies owner-only patient CRUD
+plus owner-only Storage object read/write/update/delete through the real Storage
+API. It demonstrates denial for the non-owner and always removes all temporary
+identities, rows, and objects in `finally`. A test-only service-role key may create
+and delete those identities; it is never used by application code or exposed to a
+browser.
 
 #### 2. CI database verification
 
 **File**: `.github/workflows/ci.yml`
 
-**Intent**: Run the new database isolation command against local Supabase in CI
-while preserving the existing browserless authentication smoke test.
+**Intent**: Run the new database isolation command against the approved Supabase
+Cloud project in CI while preserving the existing browserless authentication smoke
+test.
 
-**Contract**: The workflow applies the migration and runs the new command before
-teardown. It must continue to use local anonymous credentials and must not print
-or commit secrets.
+**Contract**: The workflow runs the new command with GitHub Actions secrets
+`SUPABASE_URL`, `SUPABASE_KEY`, and `SUPABASE_TEST_SERVICE_ROLE_KEY`. The test
+uses the same approved Cloud project, cleans up after itself, and must not print or
+commit secrets.
 
 ### Success Criteria
 
 #### Automated Verification
 
-- The two-user database test passes locally after the migration is applied.
-- The CI workflow invokes the database isolation command with local Supabase.
+- The two-user database test passes against the linked Supabase Cloud project after
+  the migration is applied.
+- The CI workflow invokes the database isolation command with Supabase Cloud.
 - `npm run lint`, `npm run build`, and the existing authentication smoke test pass.
 
 #### Manual Verification
 
-- A reviewer confirms the CI log includes the isolation test and that only local
-  test identities and test objects were used.
+- A reviewer confirms the CI log includes the isolation test and that only
+  temporary Cloud test identities and objects were used.
 
 **Implementation Note**: Pause for manual CI confirmation before marking this
 phase complete.
@@ -197,12 +202,13 @@ phase complete.
   for both `patients` and `storage.objects`.
 - Existing smoke coverage remains responsible for signup, signin, session handling,
   dashboard protection, and signout.
-- Run lint and production build after each code/configuration change.
+- Run lint and production build after each code/configuration change; the Cloud
+  access test is executed only with the test-only service-role secret configured.
 
 ## Migration Notes
 
 The repository currently has no product rows, so no backfill is required. Apply the
-migration to an empty local database first. A production code rollback does not
+migration to the approved Cloud project. A production code rollback does not
 undo this schema or Storage configuration; do not introduce real patient data until
 region, retention, and privacy controls are separately approved.
 
@@ -236,20 +242,20 @@ region, retention, and privacy controls are separately approved.
 
 #### Automated
 
-- [x] 2.1 Add the patient-data contract reference with the approved invariants
+- [x] 2.1 Add the patient-data contract reference with the approved invariants — 036ee5b
 
 #### Manual
 
-- [x] 2.2 Review the contract boundary against S-01 and S-03 scope
+- [x] 2.2 Review the contract boundary against S-01 and S-03 scope — 036ee5b
 
 ### Phase 3: Isolation verification and CI
 
 #### Automated
 
 - [ ] 3.1 Add and run two-user database and Storage isolation tests
-- [ ] 3.2 Run the isolation test in CI with local Supabase
+- [ ] 3.2 Run the isolation test in CI with Supabase Cloud
 - [ ] 3.3 Pass lint, build, and the existing authentication smoke test
 
 #### Manual
 
-- [ ] 3.4 Confirm CI uses only local test identities and objects
+- [ ] 3.4 Confirm CI uses only temporary Cloud test identities and objects

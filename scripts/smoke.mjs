@@ -1,6 +1,8 @@
 // Smoke test: proves the built app, the Cloudflare adapter and the Supabase auth flow still work together.
 // Zero dependencies on purpose. Run against a live server: BASE_URL=http://localhost:4321 node scripts/smoke.mjs
 
+import { createClient } from "@supabase/supabase-js";
+
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
 const email = `smoke-${Date.now()}@example.com`;
 const password = "Smoke-Test-Passw0rd!";
@@ -35,6 +37,30 @@ async function request(path, { method = "GET", form } = {}) {
   return { status: response.status, location: response.headers.get("location") ?? "" };
 }
 
+function getTestAdmin() {
+  const serviceRoleKey = process.env.SUPABASE_TEST_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) return;
+  return createClient(process.env.SUPABASE_URL, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
+async function findSmokeUser(admin) {
+  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  if (error) throw error;
+  return data.users.find((candidate) => candidate.email === email);
+}
+
+async function confirmSmokeUser() {
+  const admin = getTestAdmin();
+  if (!admin) return;
+  const user = await findSmokeUser(admin);
+  if (!user) throw new Error("Temporary smoke-test user was not found");
+
+  const { error } = await admin.auth.admin.updateUserById(user.id, { email_confirm: true });
+  if (error) throw error;
+}
+
 const steps = [
   ["home renders", () => request("/"), { status: 200 }],
   ["dashboard redirects anonymous user", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
@@ -42,6 +68,14 @@ const steps = [
     "signup creates account",
     () => request("/api/auth/signup", { method: "POST", form: { email, password } }),
     { status: 302, location: "/auth/confirm-email" },
+  ],
+  [
+    "confirm temporary account for Cloud smoke test",
+    async () => {
+      await confirmSmokeUser();
+      return { status: 200 };
+    },
+    { status: 200 },
   ],
   [
     "signin rejects wrong password",
@@ -69,6 +103,24 @@ for (const [name, run, expected] of steps) {
     failed++;
     console.log(`      expected ${expected.status} ${expected.location ?? ""}`);
   }
+}
+
+async function deleteSmokeUser() {
+  const admin = getTestAdmin();
+  if (!admin) return;
+  const user = await findSmokeUser(admin);
+  if (!user) return;
+
+  const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
+  if (deleteError) throw deleteError;
+}
+
+try {
+  await deleteSmokeUser();
+  console.log("PASS  temporary smoke-test user cleaned up");
+} catch (error) {
+  failed++;
+  console.log(`FAIL  temporary smoke-test user cleanup -> ${error.message}`);
 }
 
 console.log(failed ? `\n${failed} step(s) failed` : "\nAll smoke steps passed");
