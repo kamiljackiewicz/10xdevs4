@@ -224,23 +224,23 @@ region, retention, and privacy controls are separately approved.
 
 #### Automated
 
-- [x] 1.1 Apply the owner-bound patients migration with RLS
-- [x] 1.2 Create the private patient-documents bucket and owner-only object policies
-- [x] 1.3 Verify the migration applies cleanly to Supabase Cloud
+- [x] 1.1 Apply the owner-bound patients migration with RLS — 51c7463
+- [x] 1.2 Create the private patient-documents bucket and owner-only object policies — 51c7463
+- [x] 1.3 Verify the migration applies cleanly to Supabase Cloud — 51c7463
 
 #### Manual
 
-- [x] 1.4 Inspect the private bucket and migration objects in Supabase Dashboard
+- [x] 1.4 Inspect the private bucket and migration objects in Supabase Dashboard — 51c7463
 
 ### Phase 2: Shared domain contract
 
 #### Automated
 
-- [ ] 2.1 Add the patient-data contract reference with the approved invariants
+- [x] 2.1 Add the patient-data contract reference with the approved invariants
 
 #### Manual
 
-- [ ] 2.2 Review the contract boundary against S-01 and S-03 scope
+- [x] 2.2 Review the contract boundary against S-01 and S-03 scope
 
 ### Phase 3: Isolation verification and CI
 
