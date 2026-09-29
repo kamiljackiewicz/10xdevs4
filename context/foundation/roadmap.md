@@ -179,4 +179,6 @@ What's already in place in the codebase as of `2026-09-21` (auto-researched + us
 
 ## Done
 
+- **F-01: (foundation) patient-owned records, documents, approval state, and access boundaries can be enforced before a caregiver-facing workflow stores data.** — Archived 2026-09-29 → `context/archive/2026-09-29-patient-data-access-contract/`. Lesson: —.
+
 - **S-01: user can create a patient profile they alone can access.** — Archived 2026-09-29 → `context/archive/2026-09-29-create-patient-profile/`. Lesson: —.
