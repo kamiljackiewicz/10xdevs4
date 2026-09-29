@@ -12,11 +12,13 @@ const password = `PatientAccess-${randomUUID()}!`;
 const profile = { first_name: "Test", last_name: "Synthetic", date_of_birth: "2000-01-01", sex: "female" };
 const edited = { first_name: "Updated", last_name: "Fixture", date_of_birth: "2001-02-03", sex: "male" };
 const columns = "id,owner_id,first_name,last_name,date_of_birth,sex,created_at,updated_at";
+const noteColumns = "id,patient_id,event_date,body,created_at,updated_at";
 const users = [];
 const paths = new Set();
 let stage = "setup";
 let owner;
 let patientId;
+let timelineNoteId;
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -90,6 +92,62 @@ try {
     "Second identity could not create its own profile",
   );
 
+  stage = "timeline-note ownership, validation and birth-date guard";
+  const suppliedNoteId = randomUUID();
+  const noteInput = { patient_id: patient.id, event_date: "2001-02-03", body: "  first\r\nnote  " };
+  const createdNote = await owner.client
+    .from("timeline_notes")
+    .insert({ ...noteInput, id: suppliedNoteId, created_at: "1900-01-01", updated_at: "1900-01-01" })
+    .select(noteColumns)
+    .single();
+  assert(!createdNote.error && createdNote.data, "Owner timeline-note create failed");
+  timelineNoteId = createdNote.data.id;
+  assert(
+    createdNote.data.id !== suppliedNoteId &&
+      createdNote.data.body === "first\nnote" &&
+      createdNote.data.patient_id === patient.id,
+    "Timeline note metadata or normalization guard failed",
+  );
+  const hiddenNote = await other.client.from("timeline_notes").select(noteColumns).eq("id", timelineNoteId);
+  assert(!hiddenNote.error && hiddenNote.data?.length === 0, "Non-owner read was not hidden");
+  const foreignNoteUpdate = await other.client
+    .from("timeline_notes")
+    .update({ body: "foreign" })
+    .eq("id", timelineNoteId)
+    .select("id");
+  assert(!foreignNoteUpdate.error && foreignNoteUpdate.data?.length === 0, "Non-owner timeline update was not hidden");
+  const invalidNote = await owner.client
+    .from("timeline_notes")
+    .insert({ patient_id: patient.id, event_date: "2001-02-02", body: "before birth" });
+  assert(invalidNote.error?.code === "23514", "Direct invalid timeline insert must fail with 23514");
+  const immutableNote = await owner.client.from("timeline_notes").update({ id: randomUUID() }).eq("id", timelineNoteId);
+  assert(immutableNote.error?.code === "42501", "Timeline note ID mutation must fail with 42501");
+  const correctedBirthDate = await owner.client
+    .from("patients")
+    .update({ date_of_birth: "2001-02-04" })
+    .eq("id", patient.id);
+  assert(!correctedBirthDate.error, "Birth-date correction failed");
+  const retainedOldNote = await owner.client
+    .from("timeline_notes")
+    .select(noteColumns)
+    .eq("id", timelineNoteId)
+    .single();
+  assert(!retainedOldNote.error && retainedOldNote.data, "Birth-date correction removed an existing note");
+  const invalidOldNoteResave = await owner.client
+    .from("timeline_notes")
+    .update({ body: "edited" })
+    .eq("id", timelineNoteId);
+  assert(invalidOldNoteResave.error?.code === "23514", "Old note re-save must fail after birth-date correction");
+  const noteDeletion = await owner.client.from("timeline_notes").delete().eq("id", timelineNoteId).select("id");
+  assert(!noteDeletion.error && noteDeletion.data?.length === 1, "Owner timeline-note delete failed");
+  const cascadeNote = await owner.client
+    .from("timeline_notes")
+    .insert({ patient_id: patient.id, event_date: "2001-02-04", body: "cascade fixture" })
+    .select(noteColumns)
+    .single();
+  assert(!cascadeNote.error && cascadeNote.data, "Cascade fixture create failed");
+  timelineNoteId = cascadeNote.data.id;
+
   stage = "private Storage isolation";
   const objectPath = `${patient.id}/access-${runId}.txt`;
   const forbiddenPath = `${patient.id}/forbidden-${runId}.txt`;
@@ -139,6 +197,8 @@ try {
   // Remove objects first: this regression must not deliberately strand Cloud files.
   const retired = await owner.client.from("patients").delete().eq("id", patient.id).select("id");
   assert(!retired.error && retired.data?.length === 1, "Owner retirement failed");
+  const cascaded = await admin.from("timeline_notes").select("id").eq("id", timelineNoteId);
+  assert(!cascaded.error && cascaded.data?.length === 0, "Patient deletion did not cascade timeline notes");
   patientId = undefined;
   const cleared = await other.client.from("patients").delete().eq("id", otherPatient.data.id).select("id");
   assert(!cleared.error && cleared.data?.length === 1, "Second fixture retirement failed");
