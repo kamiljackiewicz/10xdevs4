@@ -42,7 +42,7 @@ Caregivers lose time assembling scattered blood and metabolic test results and e
 | ID | Change ID | Outcome (user can …) | Prerequisites | PRD refs | Status |
 | --- | --- | --- | --- | --- | --- |
 | F-01 | patient-data-access-contract | (foundation) patient-owned data access and approval boundaries are enforceable | — | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007 | done |
-| S-01 | create-patient-profile | create a patient profile they alone can access | F-01 | FR-001 | in-progress |
+| S-01 | create-patient-profile | create a patient profile they alone can access | F-01 | FR-001 | done |
 | S-02 | record-dated-timeline-note | save a dated note on their patient's timeline | S-01 | FR-004 | proposed |
 | S-03 | review-imported-blood-result | add a supported blood-test PDF, correct extracted parameters, and approve them | S-01, F-01 | US-01, FR-002, FR-003 | blocked |
 | S-04 | view-reviewed-result-comparison | see approved parameter changes beside dated timeline notes after approving a result | S-02, S-03 | US-01, FR-005, FR-006 | proposed |
@@ -96,7 +96,7 @@ What's already in place in the codebase as of `2026-09-21` (auto-researched + us
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** It is the smallest caregiver-owned starting point; it must remain single-patient MVP scope rather than introducing sharing.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-02: Record a dated timeline note
 
@@ -178,3 +178,5 @@ What's already in place in the codebase as of `2026-09-21` (auto-researched + us
 
 
 ## Done
+
+- **S-01: user can create a patient profile they alone can access.** — Archived 2026-09-29 → `context/archive/2026-09-29-create-patient-profile/`. Lesson: —.
