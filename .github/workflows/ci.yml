@@ -33,6 +33,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Configure Cloud secrets for Workers preview
+        run: |
+          printf 'SUPABASE_URL=%s\nSUPABASE_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_KEY" > .dev.vars
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       - run: npm run build
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
