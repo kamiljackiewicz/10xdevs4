@@ -1,7 +1,7 @@
 ---
 change_id: record-dated-timeline-note
 title: Record dated timeline notes
-status: implementing
+status: implemented
 created: 2026-09-29
 updated: 2026-09-29
 archived_at: null

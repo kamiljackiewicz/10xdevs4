@@ -201,9 +201,9 @@ The migration is additive and needs no backfill. Apply it to the approved Supaba
 
 #### Automated
 
-- [x] 3.1 Full smoke and Cloud tests prove persistence, ordering, pagination, birth-date correction, denials, and cleanup.
-- [x] 3.2 Final lint, unit tests, Astro check, and production build pass.
+- [x] 3.1 Full smoke and Cloud tests prove persistence, ordering, pagination, birth-date correction, denials, and cleanup. — ca7066f
+- [x] 3.2 Final lint, unit tests, Astro check, and production build pass. — ca7066f
 
 #### Manual
 
-- [x] 3.3 Browser review confirms date defaults, localized copy, states, and the old-note warning.
+- [x] 3.3 Browser review confirms date defaults, localized copy, states, and the old-note warning. — ca7066f
