@@ -74,4 +74,8 @@ Manual items 1.4, 2.2 and 3.4 are checked and supported by the user's phase conf
 
 ## Disposition
 
+### Post-fix CI verification — 2026-09-29
+
+Both fixes are now integration-verified: commit `ad029b3bd72625665af8e79c33c8bfee2001a52b` passed [CI 36626468261](https://github.com/kamiljackiewicz/10xdevs4/actions/runs/36626468261). Both ci and smoke jobs succeeded. Logs confirm immutable server-assigned IDs, retired-namespace isolation, profile/Storage isolation, authentication/profile/PL/EN smoke and smoke fixture cleanup. The integration script's foreign update/upsert denial and unchanged-byte assertions executed successfully; its finally cleanup completed without failure. This supersedes the pending-CI notes in the individual decisions above. F1 and F2 remain FIXED; post-fix verdict: APPROVED, all six dimensions PASS. The original review table is preserved as the historical finding snapshot.
+
 Original review saved and change.md marked impl_reviewed; this means reviewed, not approved. During subsequent triage, the user approved and applied F1, including its Cloud migration, and F2's test changes. Both findings are FIXED in code. Full integration verification remains pending CI, so original verdicts above describe the review snapshot, not a new post-fix approval. No archive, commit or push performed during triage.

@@ -1,5 +1,9 @@
 # Implementation review follow-ups
 
+## Final verification — 2026-09-29
+
+Commit `ad029b3` passed GitHub CI [36626468261](https://github.com/kamiljackiewicz/10xdevs4/actions/runs/36626468261), including the changed two-user Cloud integration suite, foreign update/upsert denial and persisted-byte checks, ID-generation/immutability/reclaim regression, and existing HTTP smoke. Both jobs succeeded and cleanup reported no failure. This supersedes the pending-CI notes below. Both F1 and F2 are FIXED and integration-verified.
+
 ## F1 — Retired patient namespace
 
 - User selected Fix now and approved the exact trigger and migration to the same Supabase Cloud project.
