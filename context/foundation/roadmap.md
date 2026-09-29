@@ -3,7 +3,7 @@ project: MedLabTimeline
 version: 1
 status: active
 created: 2026-09-21
-updated: 2026-09-21
+updated: 2026-09-29
 prd_version: 1
 main_goal: market-feedback
 top_blocker: decisions
@@ -41,7 +41,7 @@ Caregivers lose time assembling scattered blood and metabolic test results and e
 
 | ID | Change ID | Outcome (user can …) | Prerequisites | PRD refs | Status |
 | --- | --- | --- | --- | --- | --- |
-| F-01 | patient-data-access-contract | (foundation) patient-owned data access and approval boundaries are enforceable | — | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007 | ready |
+| F-01 | patient-data-access-contract | (foundation) patient-owned data access and approval boundaries are enforceable | — | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007 | in-progress |
 | S-01 | create-patient-profile | create a patient profile they alone can access | F-01 | FR-001 | proposed |
 | S-02 | record-dated-timeline-note | save a dated note on their patient's timeline | S-01 | FR-004 | proposed |
 | S-03 | review-imported-blood-result | add a supported blood-test PDF, correct extracted parameters, and approve them | S-01, F-01 | US-01, FR-002, FR-003 | blocked |
@@ -82,7 +82,7 @@ What's already in place in the codebase as of `2026-09-21` (auto-researched + us
 - **Blockers:** —
 - **Unknowns:** Which specific login method and detailed permissions will be used? — Owner: user. Block: no.
 - **Risk:** This establishes only the shared access and approval boundary required by every data-bearing flow; extending it into a complete data layer before a user workflow would delay feedback.
-- **Status:** ready
+- **Status:** in-progress
 
 ## Slices
 
