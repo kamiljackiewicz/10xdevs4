@@ -3,7 +3,7 @@ project: MedLabTimeline
 version: 1
 status: active
 created: 2026-09-21
-updated: 2026-09-29
+updated: 2026-09-30
 prd_version: 1
 main_goal: market-feedback
 top_blocker: decisions
@@ -44,7 +44,7 @@ Caregivers lose time assembling scattered blood and metabolic test results and e
 | F-01 | patient-data-access-contract | (foundation) patient-owned data access and approval boundaries are enforceable | — | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007 | done |
 | S-01 | create-patient-profile | create a patient profile they alone can access | F-01 | FR-001 | done |
 | S-02 | record-dated-timeline-note | save a dated note on their patient's timeline | S-01 | FR-004 | done |
-| S-03 | review-imported-blood-result | add a supported blood-test PDF, correct extracted parameters, and approve them | S-01, F-01 | US-01, FR-002, FR-003 | blocked |
+| S-03 | review-imported-blood-result | add a supported blood-test PDF, correct extracted parameters, and approve them | S-01, F-01 | US-01, FR-002, FR-003 | planning |
 | S-04 | view-reviewed-result-comparison | see approved parameter changes beside dated timeline notes after approving a result | S-02, S-03 | US-01, FR-005, FR-006 | proposed |
 | S-05 | correct-approved-result | detect and correct an incorrectly approved result | S-03 | FR-007 | proposed |
 
@@ -122,7 +122,7 @@ What's already in place in the codebase as of `2026-09-21` (auto-researched + us
   - Which parameters and blood-test result formats will be supported in the first flow? — Owner: user. Block: yes.
   - What acceptance criteria must US-01 satisfy? — Owner: user. Block: no.
 - **Risk:** The first supported import must be narrow enough to make extraction reviewable; treating every laboratory format as supported would make reliability unverifiable.
-- **Status:** blocked
+- **Status:** planning
 
 ### S-04: View an approved-result comparison with timeline notes
 
