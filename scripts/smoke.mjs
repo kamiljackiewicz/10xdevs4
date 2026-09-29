@@ -4,9 +4,10 @@
 import { createClient } from "@supabase/supabase-js";
 
 const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
-const email = `smoke-${Date.now()}@example.com`;
+const email = `smoke-${Date.now()}@example.invalid`;
 const password = "Smoke-Test-Passw0rd!";
 const jar = new Map();
+let smokeUserId;
 
 function cookieHeader() {
   return [...jar.entries()].map(([k, v]) => `${k}=${v}`).join("; ");
@@ -45,38 +46,22 @@ function getTestAdmin() {
   });
 }
 
-async function findSmokeUser(admin) {
-  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  if (error) throw error;
-  return data.users.find((candidate) => candidate.email === email);
-}
-
-async function confirmSmokeUser() {
+async function provisionSmokeUser() {
   const admin = getTestAdmin();
-  if (!admin) return;
-  const user = await findSmokeUser(admin);
-  if (!user) throw new Error("Temporary smoke-test user was not found");
+  if (!admin) throw new Error("SUPABASE_TEST_SERVICE_ROLE_KEY is required for the Cloud smoke test");
 
-  const { error } = await admin.auth.admin.updateUserById(user.id, { email_confirm: true });
-  if (error) throw error;
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+  });
+  if (error || !data.user) throw error ?? new Error("Temporary smoke-test user was not created");
+  smokeUserId = data.user.id;
 }
 
 const steps = [
   ["home renders", () => request("/"), { status: 200 }],
   ["dashboard redirects anonymous user", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
-  [
-    "signup creates account",
-    () => request("/api/auth/signup", { method: "POST", form: { email, password } }),
-    { status: 302, location: "/auth/confirm-email" },
-  ],
-  [
-    "confirm temporary account for Cloud smoke test",
-    async () => {
-      await confirmSmokeUser();
-      return { status: 200 };
-    },
-    { status: 200 },
-  ],
   [
     "signin rejects wrong password",
     () => request("/api/auth/signin", { method: "POST", form: { email, password: "wrong" } }),
@@ -93,6 +78,14 @@ const steps = [
 ];
 
 let failed = 0;
+try {
+  await provisionSmokeUser();
+  console.log("PASS  temporary confirmed smoke-test user provisioned");
+} catch (error) {
+  console.log(`FAIL  temporary smoke-test user setup -> ${error.message}`);
+  process.exit(1);
+}
+
 for (const [name, run, expected] of steps) {
   const actual = await run();
   const ok =
@@ -108,10 +101,8 @@ for (const [name, run, expected] of steps) {
 async function deleteSmokeUser() {
   const admin = getTestAdmin();
   if (!admin) return;
-  const user = await findSmokeUser(admin);
-  if (!user) return;
-
-  const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
+  if (!smokeUserId) return;
+  const { error: deleteError } = await admin.auth.admin.deleteUser(smokeUserId);
   if (deleteError) throw deleteError;
 }
 

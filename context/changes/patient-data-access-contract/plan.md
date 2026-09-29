@@ -200,8 +200,10 @@ phase complete.
 
 - Database tests cover successful owner operations and denied non-owner operations
   for both `patients` and `storage.objects`.
-- Existing smoke coverage remains responsible for signup, signin, session handling,
-  dashboard protection, and signout.
+- Existing smoke coverage remains responsible for signin, session handling,
+  dashboard protection, and signout. It uses a temporary, pre-confirmed Cloud test
+  user because production email confirmation must not send messages to arbitrary
+  test addresses.
 - Run lint and production build after each code/configuration change; the Cloud
   access test is executed only with the test-only service-role secret configured.
 
