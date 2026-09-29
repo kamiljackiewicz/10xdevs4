@@ -44,10 +44,16 @@ try {
   owner = await identity("owner");
   const other = await identity("other");
   stage = "owner create/read/edit and uniqueness";
-  const created = await owner.client.from("patients").insert(profile).select(columns).single();
+  const suppliedId = randomUUID();
+  const created = await owner.client
+    .from("patients")
+    .insert({ ...profile, id: suppliedId })
+    .select(columns)
+    .single();
   assert(!created.error && created.data, "Owner create failed");
   const patient = created.data;
   patientId = patient.id;
+  assert(patient.id !== suppliedId, "Client-supplied patient ID was accepted");
   assert(matches(await read(owner.client, patient.id), { ...profile, owner_id: owner.id }), "Create did not persist");
   const update = await owner.client.from("patients").update(edited).eq("id", patient.id);
   assert(!update.error, "Owner edit failed");
@@ -57,6 +63,9 @@ try {
     "Edit did not persist identity and values",
   );
   assert(Date.parse(persisted.updated_at) > Date.parse(patient.updated_at), "Edit did not advance timestamp");
+  const idMutation = await owner.client.from("patients").update({ id: randomUUID() }).eq("id", patient.id);
+  assert(idMutation.error?.code === "42501", "Patient ID mutation must fail with 42501");
+  assert(matches(await read(owner.client, patient.id), persisted), "Denied ID mutation changed the profile");
   const duplicate = await owner.client.from("patients").insert(profile);
   assert(duplicate.error?.code === "23505", "Duplicate owner must fail with 23505");
 
@@ -93,14 +102,31 @@ try {
   assert(!(await storage.upload(objectPath, content, { contentType: "text/plain" })).error, "Owner upload failed");
   const download = await storage.download(objectPath);
   assert(!download.error && download.data, "Owner download failed");
+  const updatedContent = new TextEncoder().encode("updated synthetic document");
   assert(
-    !(await storage.upload(objectPath, content, { contentType: "text/plain", upsert: true })).error,
+    !(await storage.upload(objectPath, updatedContent, { contentType: "text/plain", upsert: true })).error,
     "Owner replace failed",
+  );
+  const updated = await storage.download(objectPath);
+  assert(
+    !updated.error && updated.data && (await updated.data.text()) === "updated synthetic document",
+    "Owner replacement did not persist content",
   );
   assert((await foreignStorage.download(objectPath)).error, "Non-owner download succeeded");
   assert(
     (await foreignStorage.upload(forbiddenPath, content, { contentType: "text/plain" })).error,
     "Non-owner upload succeeded",
+  );
+  const attackContent = new TextEncoder().encode("unauthorized replacement");
+  assert((await foreignStorage.update(objectPath, attackContent)).error, "Non-owner update succeeded");
+  assert(
+    (await foreignStorage.upload(objectPath, attackContent, { upsert: true })).error,
+    "Non-owner overwrite succeeded",
+  );
+  const unchanged = await storage.download(objectPath);
+  assert(
+    !unchanged.error && unchanged.data && (await unchanged.data.text()) === "updated synthetic document",
+    "Denied overwrite changed document content",
   );
   await foreignStorage.remove([objectPath]);
   const retained = await storage.download(objectPath);
@@ -108,6 +134,24 @@ try {
   assert(!(await storage.remove([objectPath])).error, "Owner document delete failed");
   const remaining = await storage.list(patient.id, { search: `access-${runId}.txt` });
   assert(!remaining.error && remaining.data?.length === 0, "Owner document delete did not persist");
+
+  stage = "retired patient namespace cannot be reclaimed";
+  // Remove objects first: this regression must not deliberately strand Cloud files.
+  const retired = await owner.client.from("patients").delete().eq("id", patient.id).select("id");
+  assert(!retired.error && retired.data?.length === 1, "Owner retirement failed");
+  patientId = undefined;
+  const cleared = await other.client.from("patients").delete().eq("id", otherPatient.data.id).select("id");
+  assert(!cleared.error && cleared.data?.length === 1, "Second fixture retirement failed");
+  const reclaimed = await other.client
+    .from("patients")
+    .insert({ ...profile, id: patient.id })
+    .select(columns)
+    .single();
+  assert(!reclaimed.error && reclaimed.data, "Replacement profile creation failed");
+  assert(reclaimed.data.id !== patient.id, "Other user reclaimed a retired Storage namespace");
+  const oldRoot = await other.client.from("patients").select("id").eq("id", patient.id);
+  assert(!oldRoot.error && oldRoot.data?.length === 0, "Retired namespace resolved to another owner");
+  console.log("PASS  Server-assigned immutable patient IDs and retired namespace isolation");
   console.log("PASS  Cloud profile persistence, ownership, uniqueness and private Storage isolation");
 } catch {
   console.error(`FAIL  Cloud test: ${stage}`);

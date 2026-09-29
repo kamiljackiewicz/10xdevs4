@@ -15,6 +15,13 @@ and notes are implemented.
 ## Patient-owned data
 
 - Every future patient-bound table must reference `public.patients.id`.
+- The database assigns a fresh patient UUID on every insert, replacing any supplied
+  ID, and rejects changes to that ID with `42501`. This also applies to administrative
+  writes while triggers are enabled. A UUID default alone does not enforce this rule.
+- Clients cannot deliberately reclaim a retired patient UUID and its Storage
+  namespace. Administrative restoration with original IDs requires a separately
+  reviewed procedure preserving original ownership and handling retained objects;
+  never disable this guard in ordinary application or fixture code.
 - Its row-level security policies must authorize the authenticated caregiver through
   the referenced patient row's `owner_id`, not through client-supplied ownership
   metadata.
