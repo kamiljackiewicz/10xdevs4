@@ -2,188 +2,158 @@ import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import { TextEncoder } from "node:util";
 
-const requiredVariables = ["SUPABASE_URL", "SUPABASE_KEY", "SUPABASE_TEST_SERVICE_ROLE_KEY"];
-const missingVariables = requiredVariables.filter((name) => !process.env[name]);
-if (missingVariables.length > 0) {
-  throw new Error(`Missing required environment variables: ${missingVariables.join(", ")}`);
+for (const name of ["SUPABASE_URL", "SUPABASE_KEY", "SUPABASE_TEST_SERVICE_ROLE_KEY"]) {
+  if (!process.env[name]) throw new Error(`Missing required environment variable: ${name}`);
 }
-
-const url = process.env.SUPABASE_URL;
-const anonKey = process.env.SUPABASE_KEY;
-const serviceRoleKey = process.env.SUPABASE_TEST_SERVICE_ROLE_KEY;
-const runId = `${Date.now()}-${randomUUID().slice(0, 8)}`;
+const options = { auth: { autoRefreshToken: false, persistSession: false } };
+const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_TEST_SERVICE_ROLE_KEY, options);
+const runId = randomUUID();
 const password = `PatientAccess-${randomUUID()}!`;
 const profile = { first_name: "Test", last_name: "Synthetic", date_of_birth: "2000-01-01", sex: "female" };
-const ownerEmail = `patient-access-owner-${runId}@example.invalid`;
-const otherEmail = `patient-access-other-${runId}@example.invalid`;
-const admin = createClient(url, serviceRoleKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
-
-const createdUserIds = [];
-let ownerClient;
-let otherClient;
+const edited = { first_name: "Updated", last_name: "Fixture", date_of_birth: "2001-02-03", sex: "male" };
+const columns = "id,owner_id,first_name,last_name,date_of_birth,sex,created_at,updated_at";
+const users = [];
+const paths = new Set();
+let stage = "setup";
+let owner;
 let patientId;
-let objectPath;
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
-
-function getErrorMessage(error) {
-  return error instanceof Error ? error.message : String(error);
+function matches(row, expected) {
+  return row && Object.entries(expected).every(([key, value]) => row[key] === value);
+}
+async function identity(label) {
+  const email = `patient-access-${label}-${runId}@example.invalid`;
+  const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+  assert(!error && data.user, "Temporary user creation failed");
+  users.push(data.user.id);
+  const client = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, options);
+  const login = await client.auth.signInWithPassword({ email, password });
+  assert(!login.error, "Temporary user login failed");
+  return { id: data.user.id, client };
+}
+async function read(client, id) {
+  const result = await client.from("patients").select(columns).eq("id", id).single();
+  assert(!result.error && result.data, "Owner profile read failed");
+  return result.data;
 }
 
-async function createConfirmedUser(email) {
-  const { data, error } = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-  });
-  if (error || !data.user) {
-    throw new Error(`Could not create a temporary test user: ${getErrorMessage(error)}`);
-  }
-  createdUserIds.push(data.user.id);
-}
-
-async function signIn(email) {
-  const client = createClient(url, anonKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-  const { error } = await client.auth.signInWithPassword({ email, password });
-  if (error) throw new Error(`Temporary test user could not sign in: ${getErrorMessage(error)}`);
-  return client;
-}
-
-async function deleteObjectIfPresent() {
-  if (!ownerClient || !objectPath) return;
-  const { error } = await ownerClient.storage.from("patient-documents").remove([objectPath]);
-  if (error && !/not found/i.test(getErrorMessage(error))) {
-    throw new Error(`Could not clean up the temporary Storage object: ${getErrorMessage(error)}`);
-  }
-}
-
-async function deletePatientIfPresent() {
-  if (!ownerClient || !patientId) return;
-  const { error } = await ownerClient.from("patients").delete().eq("id", patientId);
-  if (error) throw new Error(`Could not clean up the temporary patient: ${getErrorMessage(error)}`);
-}
-
-async function deleteTemporaryUsers() {
-  const failures = [];
-  for (const id of createdUserIds.reverse()) {
-    const { error } = await admin.auth.admin.deleteUser(id);
-    if (error) failures.push(getErrorMessage(error));
-  }
-  if (failures.length > 0) {
-    throw new Error(`Could not clean up temporary test users: ${failures.join("; ")}`);
-  }
-}
-
-let testFailure;
 try {
-  await createConfirmedUser(ownerEmail);
-  await createConfirmedUser(otherEmail);
-  ownerClient = await signIn(ownerEmail);
-  otherClient = await signIn(otherEmail);
-
-  const { data: patient, error: createPatientError } = await ownerClient
-    .from("patients")
-    .insert(profile)
-    .select("id")
-    .single();
-  if (createPatientError || !patient) {
-    throw new Error(`Owner could not create a patient: ${getErrorMessage(createPatientError)}`);
-  }
+  owner = await identity("owner");
+  const other = await identity("other");
+  stage = "owner create/read/edit and uniqueness";
+  const created = await owner.client.from("patients").insert(profile).select(columns).single();
+  assert(!created.error && created.data, "Owner create failed");
+  const patient = created.data;
   patientId = patient.id;
+  assert(matches(await read(owner.client, patient.id), { ...profile, owner_id: owner.id }), "Create did not persist");
+  const update = await owner.client.from("patients").update(edited).eq("id", patient.id);
+  assert(!update.error, "Owner edit failed");
+  const persisted = await read(owner.client, patient.id);
+  assert(
+    matches(persisted, { ...edited, id: patient.id, owner_id: owner.id, created_at: patient.created_at }),
+    "Edit did not persist identity and values",
+  );
+  assert(Date.parse(persisted.updated_at) > Date.parse(patient.updated_at), "Edit did not advance timestamp");
+  const duplicate = await owner.client.from("patients").insert(profile);
+  assert(duplicate.error?.code === "23505", "Duplicate owner must fail with 23505");
 
-  const { data: ownPatients, error: ownReadError } = await ownerClient
+  stage = "cross-user profile isolation";
+  const hidden = await other.client.from("patients").select(columns).eq("id", patient.id);
+  assert(!hidden.error && hidden.data?.length === 0, "Non-owner read was not hidden");
+  const foreignInsert = await other.client.from("patients").insert({ ...profile, owner_id: owner.id });
+  assert(foreignInsert.error?.code === "42501", "Foreign owner insert must fail with 42501");
+  const foreignUpdate = await other.client.from("patients").update(profile).eq("id", patient.id).select("id");
+  assert(!foreignUpdate.error && foreignUpdate.data?.length === 0, "Non-owner update was not hidden");
+  const transfer = await owner.client
     .from("patients")
-    .select("id")
-    .eq("id", patientId);
-  assert(!ownReadError && ownPatients?.length === 1, "Owner could not read their patient");
+    .update({ ...edited, owner_id: other.id })
+    .eq("id", patient.id);
+  assert(transfer.error?.code === "42501", "Ownership transfer must fail with 42501");
+  const foreignDelete = await other.client.from("patients").delete().eq("id", patient.id).select("id");
+  assert(!foreignDelete.error && foreignDelete.data?.length === 0, "Non-owner delete was not hidden");
+  assert(matches(await read(owner.client, patient.id), persisted), "Denied writes changed persisted profile");
+  const otherPatient = await other.client.from("patients").insert(profile).select(columns).single();
+  assert(
+    !otherPatient.error && matches(otherPatient.data, { ...profile, owner_id: other.id }),
+    "Second identity could not create its own profile",
+  );
 
-  const { error: ownUpdateError } = await ownerClient
-    .from("patients")
-    .update({ updated_at: new Date().toISOString() })
-    .eq("id", patientId);
-  assert(!ownUpdateError, `Owner could not update their patient: ${getErrorMessage(ownUpdateError)}`);
-
-  const { data: otherPatients, error: otherReadError } = await otherClient
-    .from("patients")
-    .select("id")
-    .eq("id", patientId);
-  assert(!otherReadError && otherPatients?.length === 0, "Non-owner could read a patient");
-
-  const { error: otherInsertError } = await otherClient
-    .from("patients")
-    .insert({ ...profile, owner_id: createdUserIds[0] });
-  assert(otherInsertError, "Non-owner could create a patient for another user");
-
-  const { data: otherUpdate, error: otherUpdateError } = await otherClient
-    .from("patients")
-    .update({ updated_at: new Date().toISOString() })
-    .eq("id", patientId)
-    .select("id");
-  assert(!otherUpdateError && otherUpdate?.length === 0, "Non-owner could update a patient");
-
-  objectPath = `${patientId}/access-${runId}.txt`;
-  const content = new TextEncoder().encode("patient access contract test");
-  const { error: ownerUploadError } = await ownerClient.storage
-    .from("patient-documents")
-    .upload(objectPath, content, { contentType: "text/plain" });
-  assert(!ownerUploadError, `Owner could not upload a document: ${getErrorMessage(ownerUploadError)}`);
-
-  const { data: ownerDownload, error: ownerDownloadError } = await ownerClient.storage
-    .from("patient-documents")
-    .download(objectPath);
-  assert(!ownerDownloadError && ownerDownload, "Owner could not download their document");
-
-  const { error: ownerReplaceError } = await ownerClient.storage
-    .from("patient-documents")
-    .upload(objectPath, content, { contentType: "text/plain", upsert: true });
-  assert(!ownerReplaceError, `Owner could not replace their document: ${getErrorMessage(ownerReplaceError)}`);
-
-  const { error: otherDownloadError } = await otherClient.storage.from("patient-documents").download(objectPath);
-  assert(otherDownloadError, "Non-owner could download a document");
-
-  const { error: otherUploadError } = await otherClient.storage
-    .from("patient-documents")
-    .upload(`${patientId}/forbidden-${runId}.txt`, content, { contentType: "text/plain" });
-  assert(otherUploadError, "Non-owner could upload into another patient's folder");
-
-  await otherClient.storage.from("patient-documents").remove([objectPath]);
-  const { data: documentAfterOtherDelete, error: documentAfterOtherDeleteError } = await ownerClient.storage
-    .from("patient-documents")
-    .download(objectPath);
-  assert(!documentAfterOtherDeleteError && documentAfterOtherDelete, "Non-owner could delete a document");
-
-  const { error: ownerDeleteObjectError } = await ownerClient.storage.from("patient-documents").remove([objectPath]);
-  assert(!ownerDeleteObjectError, `Owner could not delete their document: ${getErrorMessage(ownerDeleteObjectError)}`);
-  objectPath = undefined;
-
-  const { error: ownerDeletePatientError } = await ownerClient.from("patients").delete().eq("id", patientId);
-  assert(!ownerDeletePatientError, `Owner could not delete their patient: ${getErrorMessage(ownerDeletePatientError)}`);
-  patientId = undefined;
-
-  console.log("PASS  Cloud patient-data ownership and Storage isolation");
-} catch (error) {
-  testFailure = error;
+  stage = "private Storage isolation";
+  const objectPath = `${patient.id}/access-${runId}.txt`;
+  const forbiddenPath = `${patient.id}/forbidden-${runId}.txt`;
+  // Track before requests: a response can be lost after a successful mutation.
+  paths.add(objectPath);
+  paths.add(forbiddenPath);
+  const content = new TextEncoder().encode("synthetic patient access contract test");
+  const storage = owner.client.storage.from("patient-documents");
+  const foreignStorage = other.client.storage.from("patient-documents");
+  assert(!(await storage.upload(objectPath, content, { contentType: "text/plain" })).error, "Owner upload failed");
+  const download = await storage.download(objectPath);
+  assert(!download.error && download.data, "Owner download failed");
+  assert(
+    !(await storage.upload(objectPath, content, { contentType: "text/plain", upsert: true })).error,
+    "Owner replace failed",
+  );
+  assert((await foreignStorage.download(objectPath)).error, "Non-owner download succeeded");
+  assert(
+    (await foreignStorage.upload(forbiddenPath, content, { contentType: "text/plain" })).error,
+    "Non-owner upload succeeded",
+  );
+  await foreignStorage.remove([objectPath]);
+  const retained = await storage.download(objectPath);
+  assert(!retained.error && retained.data, "Non-owner deleted document");
+  assert(!(await storage.remove([objectPath])).error, "Owner document delete failed");
+  const remaining = await storage.list(patient.id, { search: `access-${runId}.txt` });
+  assert(!remaining.error && remaining.data?.length === 0, "Owner document delete did not persist");
+  console.log("PASS  Cloud profile persistence, ownership, uniqueness and private Storage isolation");
+} catch {
+  console.error(`FAIL  Cloud test: ${stage}`);
+  process.exitCode = 1;
 } finally {
-  const cleanupFailures = [];
-  for (const cleanup of [deleteObjectIfPresent, deletePatientIfPresent, deleteTemporaryUsers]) {
+  // Admin is used only for scoped fixture cleanup, never policy assertions.
+  // Retain all roots/users if Storage cleanup cannot be verified.
+  let safeToDeleteRoots = true;
+  for (const path of paths) {
     try {
-      await cleanup();
-    } catch (error) {
-      cleanupFailures.push(getErrorMessage(error));
+      const removal = await admin.storage.from("patient-documents").remove([path]);
+      assert(!removal.error, "Object cleanup failed");
+      const [folder, filename] = path.split("/");
+      const remaining = await admin.storage.from("patient-documents").list(folder, { search: filename });
+      assert(
+        !remaining.error && !remaining.data.some((object) => object.name === filename),
+        "Object cleanup not verified",
+      );
+    } catch {
+      safeToDeleteRoots = false;
+      process.exitCode = 1;
+      console.error(`CLEANUP FAILED  retained synthetic users=${users.join(",")} object=${path}`);
     }
   }
-  if (cleanupFailures.length > 0) {
-    console.error(`CLEANUP FAILED  ${cleanupFailures.join(" | ")}`);
-    process.exitCode = 1;
-  }
-  if (testFailure) {
-    console.error(`FAIL  ${getErrorMessage(testFailure)}`);
-    process.exitCode = 1;
+  if (safeToDeleteRoots) {
+    if (owner && patientId) {
+      try {
+        const deletion = await owner.client.from("patients").delete().eq("id", patientId).select("id");
+        assert(!deletion.error && deletion.data?.length === 1, "Owner patient delete failed");
+      } catch {
+        process.exitCode = 1;
+        console.error("FAIL  owner patient deletion");
+      }
+    }
+    for (const id of users) {
+      try {
+        const deletion = await admin.from("patients").delete().eq("owner_id", id);
+        assert(!deletion.error, "Patient cleanup failed");
+        const remaining = await admin.from("patients").select("id").eq("owner_id", id);
+        assert(!remaining.error && remaining.data?.length === 0, "Patient cleanup not verified");
+        const userDeletion = await admin.auth.admin.deleteUser(id);
+        assert(!userDeletion.error, "User cleanup failed");
+      } catch {
+        process.exitCode = 1;
+        console.error(`CLEANUP FAILED  synthetic user=${id}`);
+      }
+    }
   }
 }

@@ -314,13 +314,13 @@ are introduced; the personalized homepage must not be cached publicly.
 
 #### Automated
 
-- [x] 2.1 The additive profile migration applies to Supabase Cloud and preserves ownership policies.
-- [x] 2.2 Profile validation rejects missing fields, invalid/future dates and unsupported sex values.
-- [x] 2.3 Lint, Astro check and production build pass for profile creation and editing.
+- [x] 2.1 The additive profile migration applies to Supabase Cloud and preserves ownership policies. — 3a3e061
+- [x] 2.2 Profile validation rejects missing fields, invalid/future dates and unsupported sex values. — 3a3e061
+- [x] 2.3 Lint, Astro check and production build pass for profile creation and editing. — 3a3e061
 
 #### Manual
 
-- [x] 2.4 A caregiver creates, reloads and edits a profile on the dashboard in both languages.
+- [x] 2.4 A caregiver creates, reloads and edits a profile on the dashboard in both languages. — 3a3e061
 
 ### Phase 3: Cloud isolation and application verification
 

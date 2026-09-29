@@ -1,118 +1,236 @@
-// Smoke test: proves the built app, the Cloudflare adapter and the Supabase auth flow still work together.
-// Zero dependencies on purpose. Run against a live server: BASE_URL=http://localhost:4321 node scripts/smoke.mjs
-
+// HTTP smoke against the built Workers preview and the approved Supabase Cloud project.
 import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
+import { URL } from "node:url";
 
-const BASE_URL = process.env.BASE_URL ?? "http://localhost:4321";
-const email = `smoke-${Date.now()}@example.invalid`;
-const password = "Smoke-Test-Passw0rd!";
+for (const name of ["SUPABASE_URL", "SUPABASE_TEST_SERVICE_ROLE_KEY"]) {
+  if (!process.env[name]) throw new Error(`Missing required environment variable: ${name}`);
+}
+const BASE_URL = new URL(process.env.BASE_URL ?? "http://localhost:4321").origin;
+const email = `smoke-${randomUUID()}@example.invalid`;
+const password = `Smoke-${randomUUID()}!`;
 const jar = new Map();
+const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_TEST_SERVICE_ROLE_KEY, {
+  auth: { autoRefreshToken: false, persistSession: false },
+});
+const profile = { first_name: "Synthetic", last_name: "Smoke", date_of_birth: "2000-01-02", sex: "female" };
+const edited = { first_name: "Updated", last_name: "Fixture", date_of_birth: "2001-02-03", sex: "male" };
 let smokeUserId;
+let stage = "temporary user setup";
 
-function cookieHeader() {
-  return [...jar.entries()].map(([k, v]) => `${k}=${v}`).join("; ");
+function assert(condition, message) {
+  if (!condition) throw new Error(message);
 }
-
-function storeCookies(response) {
-  for (const raw of response.headers.getSetCookie()) {
-    const [pair, ...attrs] = raw.split(";");
-    const [name, ...rest] = pair.split("=");
-    const expired = attrs.some((a) => /max-age=0/i.test(a.trim()));
-    if (expired) jar.delete(name.trim());
-    else jar.set(name.trim(), rest.join("="));
-  }
+function matches(row, expected) {
+  return row && Object.entries(expected).every(([key, value]) => row[key] === value);
 }
-
-async function request(path, { method = "GET", form } = {}) {
+async function request(path, { method = "GET", form, json, raw, origin = BASE_URL, contentType } = {}) {
+  const headers = { Cookie: [...jar].map(([key, value]) => `${key}=${value}`).join("; ") };
+  if (origin !== null) headers.Origin = origin;
+  if (contentType) headers["Content-Type"] = contentType;
+  else if (form) headers["Content-Type"] = "application/x-www-form-urlencoded";
+  else if (json !== undefined) headers["Content-Type"] = "application/json";
   const response = await fetch(BASE_URL + path, {
     method,
     redirect: "manual",
-    headers: {
-      Cookie: cookieHeader(),
-      Origin: BASE_URL,
-      ...(form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
-    },
-    body: form ? new URLSearchParams(form).toString() : undefined,
+    headers,
+    body: raw ?? (form ? new URLSearchParams(form).toString() : json !== undefined ? JSON.stringify(json) : undefined),
+    signal: globalThis.AbortSignal.timeout(30000),
   });
-  storeCookies(response);
-  return { status: response.status, location: response.headers.get("location") ?? "" };
+  for (const cookie of response.headers.getSetCookie()) {
+    const [pair, ...attrs] = cookie.split(";");
+    const [name, ...rest] = pair.split("=");
+    if (attrs.some((attr) => /max-age=0/i.test(attr.trim()))) jar.delete(name.trim());
+    else jar.set(name.trim(), rest.join("="));
+  }
+  return { status: response.status, headers: response.headers, body: await response.text() };
+}
+function expect(response, status, location) {
+  assert(response.status === status, "Unexpected HTTP status");
+  if (location !== undefined) assert(response.headers.get("location") === location, "Unexpected redirect");
+}
+async function step(name, run) {
+  stage = name;
+  await run();
+  console.log(`PASS  ${name}`);
+}
+async function api(method, json, status, options = {}) {
+  const response = await request("/api/patient", { method, json, ...options });
+  expect(response, status);
+  assert(response.headers.get("cache-control") === "private, no-store", "Patient response is cacheable");
+  return JSON.parse(response.body);
+}
+async function rendered(expected, locale) {
+  const response = await request("/dashboard");
+  expect(response, 200);
+  assert(response.headers.get("cache-control") === "private, no-store", "Dashboard is cacheable");
+  assert(response.body.includes(`lang="${locale}"`), "Wrong persisted language");
+  // Match visible definition-list values, not serialized hydration props.
+  assert(response.body.includes(`<dd>${expected.first_name}</dd>`), "First name not rendered");
+  assert(response.body.includes(`<dd>${expected.last_name}</dd>`), "Last name not rendered");
+  assert(
+    response.body.includes(`dateTime="${expected.date_of_birth}"`) ||
+      response.body.includes(`datetime="${expected.date_of_birth}"`),
+    "Birth date not rendered",
+  );
+  const sexLabel =
+    locale === "pl"
+      ? expected.sex === "female"
+        ? "Kobieta"
+        : "Mężczyzna"
+      : expected.sex === "female"
+        ? "Female"
+        : "Male";
+  assert(response.body.includes(`<dd>${sexLabel}</dd>`), "Sex not rendered in selected language");
+  assert(response.body.includes(locale === "pl" ? "Edytuj profil" : "Edit profile"), "Profile action not translated");
+}
+async function locale(value) {
+  expect(
+    await request("/api/locale", { method: "POST", form: { locale: value, returnTo: "/dashboard" } }),
+    303,
+    "/dashboard",
+  );
+  assert(jar.get("locale") === value, "Locale cookie not persisted");
 }
 
-function getTestAdmin() {
-  const serviceRoleKey = process.env.SUPABASE_TEST_SERVICE_ROLE_KEY;
-  if (!serviceRoleKey) return;
-  return createClient(process.env.SUPABASE_URL, serviceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
-
-async function provisionSmokeUser() {
-  const admin = getTestAdmin();
-  if (!admin) throw new Error("SUPABASE_TEST_SERVICE_ROLE_KEY is required for the Cloud smoke test");
-
-  const { data, error } = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-  });
-  if (error || !data.user) throw error ?? new Error("Temporary smoke-test user was not created");
-  smokeUserId = data.user.id;
-}
-
-const steps = [
-  ["home renders", () => request("/"), { status: 200 }],
-  ["dashboard redirects anonymous user", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
-  [
-    "signin rejects wrong password",
-    () => request("/api/auth/signin", { method: "POST", form: { email, password: "wrong" } }),
-    { status: 302, location: "/auth/signin?error=" },
-  ],
-  [
-    "signin accepts correct password",
-    () => request("/api/auth/signin", { method: "POST", form: { email, password } }),
-    { status: 302, location: "/" },
-  ],
-  ["dashboard renders for signed-in user", () => request("/dashboard"), { status: 200 }],
-  ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
-  ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
-];
-
-let failed = 0;
 try {
-  await provisionSmokeUser();
-  console.log("PASS  temporary confirmed smoke-test user provisioned");
-} catch (error) {
-  console.log(`FAIL  temporary smoke-test user setup -> ${error.message}`);
-  process.exit(1);
-}
-
-for (const [name, run, expected] of steps) {
-  const actual = await run();
-  const ok =
-    actual.status === expected.status &&
-    (expected.location === undefined || actual.location.startsWith(expected.location));
-  console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}`);
-  if (!ok) {
-    failed++;
-    console.log(`      expected ${expected.status} ${expected.location ?? ""}`);
+  const created = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+  assert(!created.error && created.data.user, "Temporary user setup failed");
+  smokeUserId = created.data.user.id;
+  await step("home renders in default Polish", async () => {
+    const home = await request("/");
+    expect(home, 200);
+    assert(home.body.includes('lang="pl"'), "Default language is not Polish");
+  });
+  await step("anonymous dashboard and profile writes denied", async () => {
+    expect(await request("/dashboard"), 302, "/auth/signin");
+    for (const method of ["POST", "PATCH"])
+      assert((await api(method, profile, 401)).error === "unauthorized", "Missing unauthorized code");
+  });
+  await step("signin rejects wrong password", async () => {
+    expect(
+      await request("/api/auth/signin", { method: "POST", form: { email, password: "wrong" } }),
+      302,
+      "/auth/signin?error=invalid_credentials",
+    );
+  });
+  await step("signin accepts correct password and establishes session", async () => {
+    expect(await request("/api/auth/signin", { method: "POST", form: { email, password } }), 302, "/");
+    const page = await request("/dashboard");
+    expect(page, 200);
+    assert(page.body.includes("Utwórz profil"), "Missing create form");
+  });
+  await step("profile request guards and validation", async () => {
+    assert((await api("PATCH", profile, 404)).error === "profile_not_found", "Missing profile code");
+    for (const method of ["POST", "PATCH"]) {
+      for (const origin of [null, "https://foreign.invalid"]) {
+        assert((await api(method, profile, 403, { origin })).error === "invalid_origin", "Origin guard missing");
+      }
+      assert(
+        (await api(method, profile, 415, { contentType: "text/plain" })).error === "invalid_content_type",
+        "Content type guard missing",
+      );
+      assert(
+        (await api(method, undefined, 400, { raw: "{", contentType: "application/json" })).error === "invalid_input",
+        "Invalid JSON guard missing",
+      );
+      const invalid = await api(
+        method,
+        { first_name: " ", last_name: "", date_of_birth: "2000-02-30", sex: "unknown" },
+        400,
+      );
+      assert(
+        matches(invalid.errors, {
+          first_name: "required",
+          last_name: "required",
+          date_of_birth: "invalid_date",
+          sex: "invalid_sex",
+        }),
+        "Field validation missing",
+      );
+    }
+  });
+  let patient;
+  await step("profile create ignores injected metadata and persists rendered values", async () => {
+    const injectedId = randomUUID();
+    const created = await api(
+      "POST",
+      { ...profile, id: injectedId, owner_id: randomUUID(), created_at: "1900-01-01", updated_at: "1900-01-01" },
+      201,
+    );
+    patient = created.patient;
+    assert(
+      matches(patient, profile) &&
+        patient.id !== injectedId &&
+        Date.parse(patient.created_at) > Date.parse("2020-01-01"),
+      "Create whitelist or values failed",
+    );
+    await rendered(profile, "pl");
+    await rendered(profile, "pl");
+  });
+  await step("duplicate create rejected without overwriting", async () => {
+    assert((await api("POST", edited, 409)).error === "profile_exists", "Duplicate create code missing");
+    await rendered(profile, "pl");
+  });
+  await step("English selection survives navigation and reload", async () => {
+    await locale("en");
+    await rendered(profile, "en");
+    const home = await request("/");
+    expect(home, 200);
+    assert(
+      home.body.includes('lang="en"') && home.body.includes("Open dashboard"),
+      "English home/session did not persist",
+    );
+    await rendered(profile, "en");
+  });
+  await step("profile edit preserves ID and persists all changed fields", async () => {
+    const result = await api(
+      "PATCH",
+      { ...edited, id: randomUUID(), owner_id: randomUUID(), created_at: "1900-01-01", updated_at: "1900-01-01" },
+      200,
+    );
+    assert(
+      matches(result.patient, { ...edited, id: patient.id, created_at: patient.created_at }),
+      "Edit whitelist or identity failed",
+    );
+    assert(Date.parse(result.patient.updated_at) > Date.parse(patient.updated_at), "Edit timestamp did not advance");
+    await rendered(edited, "en");
+    await rendered(edited, "en");
+  });
+  await step("Polish selection survives navigation and reload", async () => {
+    await locale("pl");
+    await rendered(edited, "pl");
+    const home = await request("/");
+    expect(home, 200);
+    assert(
+      home.body.includes('lang="pl"') && home.body.includes("Otwórz panel"),
+      "Polish home/session did not persist",
+    );
+    await rendered(edited, "pl");
+  });
+  await step("signout clears session and denies subsequent profile writes", async () => {
+    expect(await request("/api/auth/signout", { method: "POST" }), 302, "/");
+    expect(await request("/dashboard"), 302, "/auth/signin");
+    for (const method of ["POST", "PATCH"]) await api(method, profile, 401);
+  });
+} catch {
+  console.error(`FAIL  ${stage}`);
+  process.exitCode = 1;
+} finally {
+  if (smokeUserId) {
+    try {
+      // No Storage objects are created by this test. Remove only this fixture's root.
+      const deletion = await admin.from("patients").delete().eq("owner_id", smokeUserId);
+      assert(!deletion.error, "Patient cleanup failed");
+      const remaining = await admin.from("patients").select("id").eq("owner_id", smokeUserId);
+      assert(!remaining.error && remaining.data?.length === 0, "Patient cleanup not verified");
+      const userDeletion = await admin.auth.admin.deleteUser(smokeUserId);
+      assert(!userDeletion.error, "User cleanup failed");
+      console.log("PASS  temporary smoke-test profile and user cleaned up");
+    } catch {
+      console.error(`CLEANUP FAILED  synthetic user=${smokeUserId}`);
+      process.exitCode = 1;
+    }
   }
 }
-
-async function deleteSmokeUser() {
-  const admin = getTestAdmin();
-  if (!admin) return;
-  if (!smokeUserId) return;
-  const { error: deleteError } = await admin.auth.admin.deleteUser(smokeUserId);
-  if (deleteError) throw deleteError;
-}
-
-try {
-  await deleteSmokeUser();
-  console.log("PASS  temporary smoke-test user cleaned up");
-} catch (error) {
-  failed++;
-  console.log(`FAIL  temporary smoke-test user cleanup -> ${error.message}`);
-}
-
-console.log(failed ? `\n${failed} step(s) failed` : "\nAll smoke steps passed");
-process.exit(failed ? 1 : 0);
+if (!process.exitCode) console.log("All smoke steps passed");

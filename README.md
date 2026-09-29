@@ -50,15 +50,41 @@ npm run dev
 
 ```bash
 npm run lint
+npm run test:unit
+npx astro check
 npm run build
 npm run preview
 BASE_URL=http://localhost:4321 npm run smoke
+npm run test:supabase-access
 ```
 
-`npm run smoke` verifies the authentication flow against a running local or preview
-application connected to Supabase Cloud. In CI, the test-only
-`SUPABASE_TEST_SERVICE_ROLE_KEY` removes its temporary test account afterwards;
-this key is never used by the application or exposed to browsers.
+`npm run smoke` verifies login/session/logout, anonymous denial, profile API
+guards, creation, duplicate rejection, editing, persisted server-rendered values,
+and PL/EN selection across navigation and reload. Run it against a local Workers
+preview connected to the approved Supabase **Cloud** project, never local
+Supabase or Docker. This HTTP test does not execute browser hydration or click
+the form; both-language browser UX remains a manual review gate.
+
+`npm run test:supabase-access` provisions two confirmed synthetic identities and
+uses their authenticated clients to check profile persistence, owner-only access,
+ownership-transfer denial, one-profile uniqueness and private Storage isolation.
+Denied profile inserts/transfers must return RLS code `42501`; a second profile
+for an owner must return `23505`. Hidden cross-user updates/deletes must affect
+zero rows and leave the owner's values unchanged.
+
+Both Cloud commands need environment variables `SUPABASE_URL`, `SUPABASE_KEY`
+and `SUPABASE_TEST_SERVICE_ROLE_KEY`. CI reads the existing three GitHub repository
+secrets; the test-only administrative key is used solely for synthetic account
+setup and scoped cleanup, never application code or browser assets. Do not print
+or commit it. If it exists only in GitHub, run Cloud verification there rather
+than treating local lint/build success as a Cloud test pass.
+
+Cleanup is attempted in `finally`, including after a failed request. Storage
+objects are removed and verified before patient roots and users; if object
+cleanup fails, retain their owners and report synthetic identifiers for manual
+cleanup. Cleanup failures fail the test. CI runs the isolation command even if
+HTTP smoke fails (unless the job is cancelled). Forced process termination cannot
+guarantee cleanup; use any reported synthetic IDs to investigate leftovers.
 
 ## Deployment
 

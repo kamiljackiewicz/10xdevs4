@@ -27,6 +27,7 @@ jobs:
 
   smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,16 +45,18 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-      - name: Run smoke test against production preview
+      - name: Run profile, language and auth smoke against Workers preview
         run: |
           npm run preview -- --port 4321 &
           for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:4321/ && break; sleep 1; done
+          curl -sf -o /dev/null http://localhost:4321/
           BASE_URL=http://localhost:4321 npm run smoke
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           SUPABASE_TEST_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_TEST_SERVICE_ROLE_KEY }}
-      - name: Verify Cloud data-access isolation
+      - name: Verify Cloud profile and private Storage isolation
+        if: ${{ !cancelled() }}
         run: npm run test:supabase-access
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
