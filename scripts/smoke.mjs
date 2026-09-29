@@ -176,6 +176,15 @@ try {
   });
   await step("timeline note API guards and CRUD persist in SSR", async () => {
     const note = { event_date: profile.date_of_birth, body: "  first\r\nnote  " };
+    for (const method of ["PATCH", "DELETE"]) {
+      const result = await timelineApi(
+        "/api/timeline-notes/not-a-uuid",
+        method,
+        method === "PATCH" ? note : undefined,
+        404,
+      );
+      assert(result?.error === "note_not_found", "Malformed timeline note ID was not opaque");
+    }
     assert(
       (await timelineApi("/api/timeline-notes", "POST", note, 403, { origin: "https://foreign.invalid" })).error ===
         "invalid_origin",

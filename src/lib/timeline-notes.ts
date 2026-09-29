@@ -24,7 +24,7 @@ export type TimelineNoteErrorCode = "required" | "too_long" | "invalid_date" | "
 export type TimelineNoteErrors = Partial<Record<TimelineNoteField, TimelineNoteErrorCode>>;
 
 export function normalizeNoteBody(value: string): string {
-  return value.replace(/\r\n?/g, "\n").trim();
+  return value.replace(/\r\n?/g, "\n").replace(/^[ \t\n\r\f\v]+|[ \t\n\r\f\v]+$/g, "");
 }
 
 function codePointLength(value: string): number {

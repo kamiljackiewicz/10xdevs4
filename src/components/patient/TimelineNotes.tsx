@@ -114,6 +114,7 @@ export default function TimelineNotes({ notes, birthDate, messages: t, locale, p
               <input
                 id="event_date"
                 type="date"
+                style={{ colorScheme: "dark" }}
                 min={birthDate}
                 value={values.event_date}
                 onChange={(e) => {
@@ -141,13 +142,17 @@ export default function TimelineNotes({ notes, birthDate, messages: t, locale, p
                   setValues({ ...values, body: e.target.value });
                 }}
                 aria-invalid={Boolean(errors.body)}
-                aria-describedby="note-body-hint"
+                aria-describedby={errors.body ? "note-body-hint note-body-error" : "note-body-hint"}
                 className={inputClass}
               />
               <p id="note-body-hint" className="mt-1 text-sm text-blue-100/70">
                 {t.noteBodyHint}
               </p>
-              {errors.body && <p className="mt-1 text-sm text-red-300">{labels[errors.body]}</p>}
+              {errors.body && (
+                <p id="note-body-error" className="mt-1 text-sm text-red-300">
+                  {labels[errors.body]}
+                </p>
+              )}
             </div>
             {failure && (
               <p role="alert" className="text-sm text-red-300">

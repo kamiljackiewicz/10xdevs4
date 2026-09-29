@@ -7,6 +7,7 @@ const valid = { event_date: birthDate, body: "A note" };
 
 test("timeline notes normalize newlines and edge whitespace", () => {
   assert.equal(normalizeNoteBody(" \r\nfirst\rsecond\n "), "first\nsecond");
+  assert.equal(normalizeNoteBody("\u00a0note\u00a0"), "\u00a0note\u00a0");
   assert.deepEqual(validateTimelineNote({ ...valid, body: "  hello\r\n\r\nworld  " }, birthDate), {
     ok: true,
     value: { event_date: birthDate, body: "hello\n\nworld" },

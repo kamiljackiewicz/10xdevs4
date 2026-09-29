@@ -13,7 +13,7 @@ Add a caregiver-owned timeline of dated plain-text patient notes, including crea
 
 ## Desired End State
 
-An owner can navigate from the dashboard to `/dashboard/timeline`, see an explicit empty or load-error state, and manage notes in a paginated chronological list. Notes retain their body, date, and ordering after reload; non-owners cannot access them through either the app or Supabase.
+An owner can navigate from the signed-in home page to `/dashboard/timeline`, see an explicit empty or load-error state, and manage notes in a paginated chronological list. Notes retain their body, date, and ordering after reload; non-owners cannot access them through either the app or Supabase.
 
 ### Key Discoveries
 
@@ -99,7 +99,7 @@ Expose the guarded CRUD contract and a usable localized timeline page.
 
 **Intent**: Provide a separate accessible PL/EN workspace for managing history.
 
-**Contract**: SSR load only the signed-in owner's notes, sorted by `event_date DESC, created_at DESC, id DESC`, 50 per `page` query parameter, with previous/next navigation. Link to the page from an existing dashboard profile; show a profile-creation link when no patient exists. Render bodies as text preserving line breaks. New-form local default uses the device's current calendar day; edit preserves the stored date. Disable duplicate operations while pending, retain drafts in component memory on failures, and advise users to inspect the list after ambiguous network failures rather than retrying automatically. Create/edit refresh page one; delete refreshes the current page and moves back if that page becomes empty. Require explicit irreversible-delete confirmation. Flag existing notes before the current birth date, while requiring a corrected date on re-save. Use labeled keyboard-accessible form errors and localized labels, states, confirmation, and messages.
+**Contract**: SSR load only the signed-in owner's notes, sorted by `event_date DESC, created_at DESC, id DESC`, 50 per `page` query parameter, with previous/next navigation. Link to the page from the signed-in home page and return there from the timeline; show a profile-creation link when no patient exists. Render bodies as text preserving line breaks. New-form local default uses the device's current calendar day; edit preserves the stored date. Disable duplicate operations while pending, retain drafts in component memory on failures, and advise users to inspect the list after ambiguous network failures rather than retrying automatically. Create/edit refresh page one; delete refreshes the current page and moves back if that page becomes empty. Require explicit irreversible-delete confirmation. Flag existing notes before the current birth date, while requiring a corrected date on re-save. Use labeled keyboard-accessible form errors and localized labels, states, confirmation, and messages.
 
 #### 3. HTTP and page behavior tests
 
