@@ -41,8 +41,8 @@ Caregivers lose time assembling scattered blood and metabolic test results and e
 
 | ID | Change ID | Outcome (user can …) | Prerequisites | PRD refs | Status |
 | --- | --- | --- | --- | --- | --- |
-| F-01 | patient-data-access-contract | (foundation) patient-owned data access and approval boundaries are enforceable | — | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007 | in-progress |
-| S-01 | create-patient-profile | create a patient profile they alone can access | F-01 | FR-001 | proposed |
+| F-01 | patient-data-access-contract | (foundation) patient-owned data access and approval boundaries are enforceable | — | FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007 | done |
+| S-01 | create-patient-profile | create a patient profile they alone can access | F-01 | FR-001 | planning |
 | S-02 | record-dated-timeline-note | save a dated note on their patient's timeline | S-01 | FR-004 | proposed |
 | S-03 | review-imported-blood-result | add a supported blood-test PDF, correct extracted parameters, and approve them | S-01, F-01 | US-01, FR-002, FR-003 | blocked |
 | S-04 | view-reviewed-result-comparison | see approved parameter changes beside dated timeline notes after approving a result | S-02, S-03 | US-01, FR-005, FR-006 | proposed |
@@ -82,7 +82,7 @@ What's already in place in the codebase as of `2026-09-21` (auto-researched + us
 - **Blockers:** —
 - **Unknowns:** Which specific login method and detailed permissions will be used? — Owner: user. Block: no.
 - **Risk:** This establishes only the shared access and approval boundary required by every data-bearing flow; extending it into a complete data layer before a user workflow would delay feedback.
-- **Status:** in-progress
+- **Status:** done
 
 ## Slices
 
@@ -96,7 +96,7 @@ What's already in place in the codebase as of `2026-09-21` (auto-researched + us
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** It is the smallest caregiver-owned starting point; it must remain single-patient MVP scope rather than introducing sharing.
-- **Status:** proposed
+- **Status:** planning
 
 ### S-02: Record a dated timeline note
 
@@ -161,11 +161,10 @@ What's already in place in the codebase as of `2026-09-21` (auto-researched + us
 
 ## Open Roadmap Questions
 
-1. **Which specific login method and detailed permissions will be used?** — Owner: user. Block: F-01.
-2. **Which parameters and blood-test result formats will be supported in the first flow?** — Owner: user. Block: S-03, S-04, S-05.
-3. **What document volume and usage frequency are expected?** — Owner: user. Block: roadmap-wide.
-4. **What measurable outcome proves the primary success criterion?** — Owner: user. Block: roadmap-wide.
-5. **What acceptance criteria must US-01 satisfy?** — Owner: user. Block: S-03, S-04.
+1. **Which parameters and blood-test result formats will be supported in the first flow?** — Owner: user. Block: S-03, S-04, S-05.
+2. **What document volume and usage frequency are expected?** — Owner: user. Block: roadmap-wide.
+3. **What measurable outcome proves the primary success criterion?** — Owner: user. Block: roadmap-wide.
+4. **What acceptance criteria must US-01 satisfy?** — Owner: user. Block: S-03, S-04.
 
 ## Parked
 
