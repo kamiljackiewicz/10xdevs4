@@ -213,7 +213,7 @@ try {
     const home = await request("/");
     expect(home, 200);
     assert(
-      home.body.includes('lang="en"') && home.body.includes("Open dashboard"),
+      home.body.includes('lang="en"') && home.body.includes("Open profile"),
       "English home/session did not persist",
     );
     await rendered(profile, "en");
@@ -238,7 +238,7 @@ try {
     const home = await request("/");
     expect(home, 200);
     assert(
-      home.body.includes('lang="pl"') && home.body.includes("Otwórz panel"),
+      home.body.includes('lang="pl"') && home.body.includes("Otwórz profil"),
       "Polish home/session did not persist",
     );
     await rendered(edited, "pl");

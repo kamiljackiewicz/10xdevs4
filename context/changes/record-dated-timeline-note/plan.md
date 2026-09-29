@@ -190,20 +190,20 @@ The migration is additive and needs no backfill. Apply it to the approved Supaba
 
 #### Automated
 
-- [x] 2.1 HTTP tests prove API contracts, request guards, and SSR-visible CRUD.
-- [x] 2.2 Lint, unit tests, Astro check, and production build pass.
+- [x] 2.1 HTTP tests prove API contracts, request guards, and SSR-visible CRUD. — 020b781
+- [x] 2.2 Lint, unit tests, Astro check, and production build pass. — 020b781
 
 #### Manual
 
-- [x] 2.3 PL/EN navigation, forms, confirmation, keyboard flow, and draft retention work.
+- [x] 2.3 PL/EN navigation, forms, confirmation, keyboard flow, and draft retention work. — 020b781
 
 ### Phase 3: End-to-end verification
 
 #### Automated
 
-- [ ] 3.1 Full smoke and Cloud tests prove persistence, ordering, pagination, birth-date correction, denials, and cleanup.
-- [ ] 3.2 Final lint, unit tests, Astro check, and production build pass.
+- [x] 3.1 Full smoke and Cloud tests prove persistence, ordering, pagination, birth-date correction, denials, and cleanup.
+- [x] 3.2 Final lint, unit tests, Astro check, and production build pass.
 
 #### Manual
 
-- [ ] 3.3 Browser review confirms date defaults, localized copy, states, and the old-note warning.
+- [x] 3.3 Browser review confirms date defaults, localized copy, states, and the old-note warning.
