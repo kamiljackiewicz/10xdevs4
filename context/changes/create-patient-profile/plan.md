@@ -326,10 +326,10 @@ are introduced; the personalized homepage must not be cached publicly.
 
 #### Automated
 
-- [ ] 3.1 Cloud tests pass for profile persistence, owner isolation, single-patient uniqueness and existing private Storage access.
-- [ ] 3.2 HTTP smoke passes for authentication, profile create/edit/reload and persistent PL/EN selection, with test-data cleanup.
-- [ ] 3.3 CI passes lint, Astro check, build and both Cloud test commands.
+- [x] 3.1 Cloud tests pass for profile persistence, owner isolation, single-patient uniqueness and existing private Storage access. — f27deee
+- [x] 3.2 HTTP smoke passes for authentication, profile create/edit/reload and persistent PL/EN selection, with test-data cleanup. — f27deee
+- [x] 3.3 CI passes lint, Astro check, build and both Cloud test commands. — f27deee
 
 #### Manual
 
-- [ ] 3.4 The reviewer confirms both-language profile UX and successful Cloud CI with synthetic test data only.
+- [x] 3.4 The reviewer confirms both-language profile UX and successful Cloud CI with synthetic test data only. — f27deee

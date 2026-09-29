@@ -1,7 +1,7 @@
 ---
 change_id: create-patient-profile
 title: Create a private patient profile
-status: implementing
+status: implemented
 created: 2026-09-29
 updated: 2026-09-29
 archived_at: null
@@ -18,3 +18,5 @@ Phase 2: migration `20260929194000_patient_profile.sql` applied to the approved 
 Phase 2 requirements correction: first and last names are both required; surname was omitted from the original requirement by mistake, not added as a scope extension. A persistent home action remains available after saving. The user confirmed phase 2 manual verification in both languages after the UI fixes. The updated 13 unit tests, lint, Astro check and build pass; full Cloud HTTP lifecycle verification remains in phase 3.
 
 At the user's request, the two already-applied profile SQL files were consolidated into `20260929194000_patient_profile.sql`. Cloud migration history was repaired to retain that version and remove `20260929194100` from the applied list, without executing schema or patient-data changes. Migration list matches the repository, push dry-run reports no pending migrations, and temporary-table contract tests pass. Original SQL copies are recoverable from `/private/tmp/patient-migration-merge.Ur3riC/` and the previous Git index until restaging.
+
+Phase 3: commit `f27deee` passed GitHub CI run [36622482440](https://github.com/kamiljackiewicz/10xdevs4/actions/runs/36622482440), including profile HTTP lifecycle, persistent PL/EN, owner isolation, uniqueness, private Storage and fixture cleanup. The user accepted both-language UX and the Cloud CI results. All three phases are implemented and accepted. No separate fault-injection run was performed for the new Cloud integration tests.
