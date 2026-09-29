@@ -1,5 +1,7 @@
 ---
+import { messages } from "@/lib/i18n";
 const { user } = Astro.locals;
+const t = messages[Astro.locals.locale];
 ---
 
 <div class="mb-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80">
@@ -8,24 +10,24 @@ const { user } = Astro.locals;
       <span class="text-blue-100/70">{user.email}</span>
       <div class="flex items-center gap-3">
         <a href="/dashboard" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-          Dashboard
+          {t.dashboard}
         </a>
         <form method="POST" action="/api/auth/signout">
           <button type="submit" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-            Sign out
+            {t.signOut}
           </button>
         </form>
       </div>
     </>
   ) : (
     <>
-      <span class="text-blue-100/70">Not signed in</span>
+      <span class="text-blue-100/70">{t.notSignedIn}</span>
       <div class="flex gap-3">
         <a href="/auth/signin" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-          Sign in
+          {t.signIn}
         </a>
         <a href="/auth/signup" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-          Sign up
+          {t.signUp}
         </a>
       </div>
     </>

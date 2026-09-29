@@ -270,12 +270,12 @@ place. Production deployment is separate from this implementation plan.
 
 #### Automated
 
-- [ ] 1.1 Locale selection, invalid-locale fallback, dictionary parity and safe redirects pass focused tests.
-- [ ] 1.2 Lint, Astro check and production build pass for the localized application.
+- [x] 1.1 Locale selection, invalid-locale fallback, dictionary parity and safe redirects pass focused tests.
+- [x] 1.2 Lint, Astro check and production build pass for the localized application.
 
 #### Manual
 
-- [ ] 1.3 All current screens render in PL and EN, including validation, and preserve the language across navigation.
+- [x] 1.3 All current screens render in PL and EN, including validation, and preserve the language across navigation.
 
 ### Phase 2: Private profile creation and editing
 

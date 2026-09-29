@@ -1,17 +1,21 @@
 ---
 import "../styles/global.css";
 import Banner from "@/components/Banner.astro";
-import { missingConfigs } from "@/lib/config-status";
+import { getMissingConfigs } from "@/lib/config-status";
+import { messages } from "@/lib/i18n";
 
 interface Props {
   title?: string;
 }
 
 const { title = "10x MedLab Timeline" } = Astro.props;
+const { locale } = Astro.locals;
+const t = messages[locale];
+const missingConfigs = getMissingConfigs(locale);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={locale}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -19,14 +23,40 @@ const { title = "10x MedLab Timeline" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
+    <nav aria-label={t.language} class="flex justify-end gap-2 bg-slate-950 px-4 py-2 text-sm text-white">
+      <form method="POST" action="/api/locale" class="flex items-center gap-2">
+        <span>{t.language}:</span>
+        <input type="hidden" name="returnTo" value={Astro.url.pathname + Astro.url.search} />
+        <button
+          type="submit"
+          name="locale"
+          value="pl"
+          lang="pl"
+          aria-pressed={locale === "pl"}
+          class="rounded px-2 py-1 hover:bg-white/20 aria-pressed:bg-purple-700"
+        >
+          Polski
+        </button>
+        <button
+          type="submit"
+          name="locale"
+          value="en"
+          lang="en"
+          aria-pressed={locale === "en"}
+          class="rounded px-2 py-1 hover:bg-white/20 aria-pressed:bg-purple-700"
+        >
+          English
+        </button>
+      </form>
+    </nav>
     {missingConfigs.map((cfg) => (
       <Banner variant="error">
-        <strong>Uwaga:</strong> {cfg.message}
+        <strong>{t.warning}</strong> {cfg.message}
         {cfg.docsUrl && (
           <>
             {" "}
             <a href={cfg.docsUrl} target="_blank" rel="noopener noreferrer">
-              {cfg.docsLabel ?? "Dokumentacja"}
+              {cfg.docsLabel ?? t.documentation}
             </a>
             .
           </>

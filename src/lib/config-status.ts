@@ -1,4 +1,5 @@
 import { SUPABASE_URL, SUPABASE_KEY } from "astro:env/server";
+import { messages, type Locale } from "@/lib/i18n";
 
 export interface ConfigStatus {
   name: string;
@@ -8,14 +9,14 @@ export interface ConfigStatus {
   docsLabel?: string;
 }
 
-export const configStatuses: ConfigStatus[] = [
+export const getConfigStatuses = (locale: Locale): ConfigStatus[] => [
   {
     name: "Supabase",
     configured: Boolean(SUPABASE_URL && SUPABASE_KEY),
-    message: "Supabase nie jest skonfigurowany — funkcje uwierzytelniania są wyłączone.",
+    message: messages[locale].configMissing,
     docsUrl: "https://github.com/przeprogramowani/10x-astro-starter#supabase-configuration",
-    docsLabel: "Zobacz instrukcję konfiguracji",
+    docsLabel: messages[locale].configInstructions,
   },
 ];
 
-export const missingConfigs = configStatuses.filter((s) => !s.configured);
+export const getMissingConfigs = (locale: Locale) => getConfigStatuses(locale).filter((s) => !s.configured);
