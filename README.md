@@ -95,6 +95,11 @@ guarantee cleanup; use any reported synthetic IDs to investigate leftovers.
 
 The application is deployed as a Cloudflare Worker. Never add real credentials to the repository, `wrangler.jsonc`, or public issue discussions.
 
+Authentication uses Supabase cookies. The unused Astro session store is explicitly
+disabled with `session: false` in `astro.config.mjs`, so the Cloudflare adapter does
+not generate a `SESSION` KV binding for production or branch previews. Existing
+Cloudflare KV namespaces are not deleted by this setting.
+
 Before a production deployment, set the server-side secrets through Wrangler's interactive prompt:
 
 ```bash
