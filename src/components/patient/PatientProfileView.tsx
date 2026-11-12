@@ -25,6 +25,7 @@ export interface PatientProfileViewProps {
   today: string;
   locale: Locale;
   messages: Readonly<Messages>;
+  reloadHref?: string;
   onChange: (field: ProfileField, value: string) => void;
   onSubmit: (event: SubmitEvent<HTMLFormElement>) => void | Promise<void>;
   onEdit: () => void;
@@ -41,6 +42,7 @@ export default function PatientProfileView({
   today,
   locale,
   messages: t,
+  reloadHref = "/dashboard",
   onChange,
   onSubmit,
   onEdit,
@@ -168,7 +170,7 @@ export default function PatientProfileView({
             <div role="alert" className="text-destructive space-y-2 text-sm">
               <p>{failure}</p>
               <a
-                href="/dashboard"
+                href={reloadHref}
                 className="focus-visible:outline-ring rounded-sm underline underline-offset-4 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-4"
               >
                 {t.reloadPage}

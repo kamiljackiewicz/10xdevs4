@@ -85,6 +85,11 @@ export default defineConfig(
   eslintPluginAstro.configs["flat/recommended"],
   eslintPluginAstro.configs["flat/jsx-a11y-recommended"],
   astroConfig,
+  {
+    files: ["src/pages/dev/dashboard-ui.astro"],
+    // The rule crashes on Astro's top-level Response return (missing parent node).
+    rules: { "@typescript-eslint/no-misused-promises": "off" },
+  },
   scriptsConfig,
   eslintPluginPrettier,
 );

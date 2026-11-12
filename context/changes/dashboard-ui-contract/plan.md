@@ -258,26 +258,26 @@ Brak migracji danych, nowych sekretów i zmian API. Wdrożenie poza zakresem pla
 
 #### Automated
 
-- [x] 3.1 Widok przechodzi `npm run lint`, `npx astro check`, `npm run build` i `npm run test:unit`.
-- [x] 3.2 `npm run smoke` przeciw lokalnie uruchomionej aplikacji z konfiguracją testową potwierdza istniejący kontrakt profilu, języka i sesji.
-- [x] 3.3 Skan z researchu daje 0 pasujących linii w dashboard.astro, PatientProfile.tsx oraz nowym PatientProfileView.tsx; poprzednia baza dwóch plików wynosiła 22.
+- [x] 3.1 Widok przechodzi `npm run lint`, `npx astro check`, `npm run build` i `npm run test:unit`. — 9a62f0b
+- [x] 3.2 `npm run smoke` przeciw lokalnie uruchomionej aplikacji z konfiguracją testową potwierdza istniejący kontrakt profilu, języka i sesji. — 9a62f0b
+- [x] 3.3 Skan z researchu daje 0 pasujących linii w dashboard.astro, PatientProfile.tsx oraz nowym PatientProfileView.tsx; poprzednia baza dwóch plików wynosiła 22. — 9a62f0b
 
 #### Manual
 
-- [x] 3.4 Dashboard z syntetycznym profilem pokazuje odczyt, tworzenie, uzupełnienie i edycję w PL/EN; anulowanie zachowuje poprzednie wartości, błędny zapis zachowuje szkic, powrót do Home i wylogowanie działają.
-- [x] 3.5 Zrzuty po fazie przy 1440 × 1000 i 390 × 844 px potwierdzają czytelny panel, brak poziomego scrolla i kontrast ikony daty; klawiatura ujawnia fokus na kontrolkach.
-- [x] 3.6 Kontrola Home, timeline i logowania potwierdza brak zamierzonej zmiany ich wyglądu po dodaniu lokalnego motywu.
+- [x] 3.4 Dashboard z syntetycznym profilem pokazuje odczyt, tworzenie, uzupełnienie i edycję w PL/EN; anulowanie zachowuje poprzednie wartości, błędny zapis zachowuje szkic, powrót do Home i wylogowanie działają. — 9a62f0b
+- [x] 3.5 Zrzuty po fazie przy 1440 × 1000 i 390 × 844 px potwierdzają czytelny panel, brak poziomego scrolla i kontrast ikony daty; klawiatura ujawnia fokus na kontrolkach. — 9a62f0b
+- [x] 3.6 Kontrola Home, timeline i logowania potwierdza brak zamierzonej zmiany ich wyglądu po dodaniu lokalnego motywu. — 9a62f0b
 
 ### Phase 4: Stany i zabezpieczenia
 
 #### Automated
 
-- [ ] 4.1 Końcowe `npm run lint`, `npx astro check`, `npm run build`, `npm run test:unit` oraz smoke przeciw lokalnej aplikacji przechodzą po zmianach fazy 4.
-- [ ] 4.2 Guard odrzuca fixture z kolorem palety i akceptuje fixture z rolami semantycznymi; skan trzech plików widoku pozostaje zerowy.
-- [ ] 4.3 Żądanie `/dev/dashboard-ui` do lokalnego podglądu produkcyjnego buildu zwraca 404, a demonstracja w trybie dev nie wysyła żądań do API profilu.
+- [x] 4.1 Końcowe `npm run lint`, `npx astro check`, `npm run build`, `npm run test:unit` oraz smoke przeciw lokalnej aplikacji przechodzą po zmianach fazy 4.
+- [x] 4.2 Guard odrzuca fixture z kolorem palety i akceptuje fixture z rolami semantycznymi; skan trzech plików widoku pozostaje zerowy.
+- [x] 4.3 Żądanie `/dev/dashboard-ui` do lokalnego podglądu produkcyjnego buildu zwraca 404, a demonstracja w trybie dev nie wysyła żądań do API profilu.
 
 #### Manual
 
-- [ ] 4.4 Macierz siedmiu stanów jest pokazana i opisana: default, hover, focus-visible, disabled, error, empty i loading; użycie klawiatury, czytelność disabled, komunikaty i stabilność pending są potwierdzone na renderze.
-- [ ] 4.5 Końcowe zrzuty desktop 1440 × 1000 i mobile 390 × 844 dla PL/EN w evidence potwierdzają brak obcięcia treści, czytelny kontrast tekstu i kontrolek oraz kalendarza.
-- [ ] 4.6 Przegląd potwierdza pokrycie C1–C5, regułę poza blokiem CLI oraz gotowość do `/10x-impl-review dashboard-ui-contract`; ewentualne nowe ustalenia mają jawny triage.
+- [x] 4.4 Macierz siedmiu stanów jest pokazana i opisana: default, hover, focus-visible, disabled, error, empty i loading; użycie klawiatury, czytelność disabled, komunikaty i stabilność pending są potwierdzone na renderze.
+- [x] 4.5 Końcowe zrzuty desktop 1440 × 1000 i mobile 390 × 844 dla PL/EN w evidence potwierdzają brak obcięcia treści, czytelny kontrast tekstu i kontrolek oraz kalendarza.
+- [x] 4.6 Przegląd potwierdza pokrycie C1–C5, regułę poza blokiem CLI oraz gotowość do `/10x-impl-review dashboard-ui-contract`; ewentualne nowe ustalenia mają jawny triage.

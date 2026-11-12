@@ -13,6 +13,14 @@ CI runs on pushes and pull requests to `master`. It runs `astro sync`, linting, 
 ## References
 
 Use @README.md for local setup and @package.json for scripts and dependencies. Do not duplicate their contents here.
+
+## Dashboard UI Contract
+
+- Dashboard token values live in `src/styles/global.css`, scoped to `.dashboard-theme`; use semantic roles and the existing Tailwind scale in dashboard views, without literal colors, palette classes or arbitrary dimensions. Keep the global root, `.dark` and other views unchanged when adjusting this local theme.
+- Check `src/components/ui/` before creating a control. Reuse `Button`, `Input`, `Select` and `Field`; add missing primitives through the existing local shadcn/Tailwind conventions rather than copying controls into views.
+- Use the development-only `/dev/dashboard-ui` showcase (`src/components/patient/DashboardUiShowcase.tsx`) for PL/EN, keyboard focus, hover, disabled, error, empty and loading checks. Preserve native date-picker contrast and stable pending actions. Record desktop/mobile evidence before accepting visual changes.
+- `npm run lint` includes `scripts/check-dashboard-ui.mjs`, restricted to `dashboard.astro`, `PatientProfile.tsx` and `PatientProfileView.tsx`. Keep this scope explicit; token definitions and the shared component directory are not scan targets.
+
 <!-- BEGIN @przeprogramowani/10x-cli -->
 
 ## Zestaw narzędzi AI 10xDevs — Moduł 2, Lekcja 5 (interfejs 10xDevs 4.0)

@@ -1,0 +1,19 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import DashboardUiShowcase from "@/components/patient/DashboardUiShowcase";
+
+export const prerender = false;
+
+if (!import.meta.env.DEV) {
+  return new Response(null, { status: 404 });
+}
+
+Astro.response.headers.set("Cache-Control", "no-store");
+---
+
+<Layout title="Dashboard UI — dev">
+  <main class="dashboard-theme dark min-h-screen bg-background px-4 py-8 text-foreground sm:py-12">
+    <!-- Client-only keeps the shared form's native API action out of the unhydrated document. -->
+    <DashboardUiShowcase client:only="react" locale={Astro.locals.locale} />
+  </main>
+</Layout>
