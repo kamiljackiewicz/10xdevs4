@@ -73,7 +73,7 @@
 }
 
 /* Dashboard palette: existing Tailwind scale, scoped to the approved dark panel.
-   Values and provenance: context/changes/dashboard-ui-contract/theme-tokens.md. */
+   Values and provenance: context/archive/2026-11-12-dashboard-ui-contract/theme-tokens.md. */
 .dashboard-theme {
   --radius: 0.625rem;
   --background: #0f172a;
