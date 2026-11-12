@@ -236,23 +236,23 @@ Brak migracji danych, nowych sekretów i zmian API. Wdrożenie poza zakresem pla
 
 #### Automated
 
-- [x] 1.1 Nowe kontrolki przechodzą `npm run lint`, `npx astro check` i `npm run build`.
-- [x] 1.2 Przegląd typów potwierdza obsługę required, autoComplete, min/max, disabled oraz powiązań ARIA bez rozszerzania auth FormField.
+- [x] 1.1 Nowe kontrolki przechodzą `npm run lint`, `npx astro check` i `npm run build`. — f28d5c2
+- [x] 1.2 Przegląd typów potwierdza obsługę required, autoComplete, min/max, disabled oraz powiązań ARIA bez rozszerzania auth FormField. — f28d5c2
 
 #### Manual
 
-- [x] 1.3 Przegląd zmian potwierdza zachowanie istniejącego API Button i brak podłączenia nowych styli do innych ekranów.
+- [x] 1.3 Przegląd zmian potwierdza zachowanie istniejącego API Button i brak podłączenia nowych styli do innych ekranów. — f28d5c2
 
 ### Phase 2: Tokeny dashboardu
 
 #### Automated
 
-- [ ] 2.1 Zakresowane tokeny i dokument wartości przechodzą `npm run lint` i `npm run build`.
-- [ ] 2.2 Przegląd diff potwierdza brak zmiany wartości root, globalnego `.dark`, body i `bg-cosmic` oraz zgodność tabeli wartości z CSS.
+- [x] 2.1 Zakresowane tokeny i dokument wartości przechodzą `npm run lint` i `npm run build`.
+- [x] 2.2 Przegląd diff potwierdza brak zmiany wartości root, globalnego `.dark`, body i `bg-cosmic` oraz zgodność tabeli wartości z CSS.
 
 #### Manual
 
-- [ ] 2.3 Przegląd kontraktu potwierdza jeden stały ciemny motyw, semantyczne role i brak nowej zależności lub przełącznika.
+- [x] 2.3 Przegląd kontraktu potwierdza jeden stały ciemny motyw, semantyczne role i brak nowej zależności lub przełącznika.
 
 ### Phase 3: Widok profilu
 

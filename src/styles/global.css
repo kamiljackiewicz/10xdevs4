@@ -72,6 +72,29 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Dashboard palette: existing Tailwind scale, scoped to the approved dark panel.
+   Values and provenance: context/changes/dashboard-ui-contract/theme-tokens.md. */
+.dashboard-theme {
+  --radius: 0.625rem;
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --primary: #c4b5fd;
+  --primary-foreground: #1e1b4b;
+  --secondary: #334155;
+  --secondary-foreground: #f1f5f9;
+  --muted: #334155;
+  --muted-foreground: #cbd5e1;
+  --accent: #334155;
+  --accent-foreground: #f1f5f9;
+  --destructive: #fca5a5;
+  --border: #64748b;
+  --input: #64748b;
+  --ring: #c4b5fd;
+  color-scheme: dark;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
