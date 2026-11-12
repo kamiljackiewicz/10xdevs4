@@ -32,6 +32,11 @@ npx supabase login
 npx supabase link --project-ref <project-ref>
 ```
 
+The project uses Supabase CLI v3. Database commands target the local stack by
+default; pass `--remote` explicitly when inspecting or updating the linked Cloud
+project. Hosted mutations also require explicit confirmation. See the
+[CLI v3 migration guide](https://supabase.com/docs/guides/local-development/cli/migrating-to-v3).
+
 Set the Cloud project URL and publishable (or legacy anonymous) key in ignored
 `.env` and `.dev.vars` files. Never commit either file:
 
