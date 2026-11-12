@@ -247,26 +247,26 @@ Brak migracji danych, nowych sekretów i zmian API. Wdrożenie poza zakresem pla
 
 #### Automated
 
-- [x] 2.1 Zakresowane tokeny i dokument wartości przechodzą `npm run lint` i `npm run build`.
-- [x] 2.2 Przegląd diff potwierdza brak zmiany wartości root, globalnego `.dark`, body i `bg-cosmic` oraz zgodność tabeli wartości z CSS.
+- [x] 2.1 Zakresowane tokeny i dokument wartości przechodzą `npm run lint` i `npm run build`. — 9b61db5
+- [x] 2.2 Przegląd diff potwierdza brak zmiany wartości root, globalnego `.dark`, body i `bg-cosmic` oraz zgodność tabeli wartości z CSS. — 9b61db5
 
 #### Manual
 
-- [x] 2.3 Przegląd kontraktu potwierdza jeden stały ciemny motyw, semantyczne role i brak nowej zależności lub przełącznika.
+- [x] 2.3 Przegląd kontraktu potwierdza jeden stały ciemny motyw, semantyczne role i brak nowej zależności lub przełącznika. — 9b61db5
 
 ### Phase 3: Widok profilu
 
 #### Automated
 
-- [ ] 3.1 Widok przechodzi `npm run lint`, `npx astro check`, `npm run build` i `npm run test:unit`.
-- [ ] 3.2 `npm run smoke` przeciw lokalnie uruchomionej aplikacji z konfiguracją testową potwierdza istniejący kontrakt profilu, języka i sesji.
-- [ ] 3.3 Skan z researchu daje 0 pasujących linii w dashboard.astro, PatientProfile.tsx oraz nowym PatientProfileView.tsx; poprzednia baza dwóch plików wynosiła 22.
+- [x] 3.1 Widok przechodzi `npm run lint`, `npx astro check`, `npm run build` i `npm run test:unit`.
+- [x] 3.2 `npm run smoke` przeciw lokalnie uruchomionej aplikacji z konfiguracją testową potwierdza istniejący kontrakt profilu, języka i sesji.
+- [x] 3.3 Skan z researchu daje 0 pasujących linii w dashboard.astro, PatientProfile.tsx oraz nowym PatientProfileView.tsx; poprzednia baza dwóch plików wynosiła 22.
 
 #### Manual
 
-- [ ] 3.4 Dashboard z syntetycznym profilem pokazuje odczyt, tworzenie, uzupełnienie i edycję w PL/EN; anulowanie zachowuje poprzednie wartości, błędny zapis zachowuje szkic, powrót do Home i wylogowanie działają.
-- [ ] 3.5 Zrzuty po fazie przy 1440 × 1000 i 390 × 844 px potwierdzają czytelny panel, brak poziomego scrolla i kontrast ikony daty; klawiatura ujawnia fokus na kontrolkach.
-- [ ] 3.6 Kontrola Home, timeline i logowania potwierdza brak zamierzonej zmiany ich wyglądu po dodaniu lokalnego motywu.
+- [x] 3.4 Dashboard z syntetycznym profilem pokazuje odczyt, tworzenie, uzupełnienie i edycję w PL/EN; anulowanie zachowuje poprzednie wartości, błędny zapis zachowuje szkic, powrót do Home i wylogowanie działają.
+- [x] 3.5 Zrzuty po fazie przy 1440 × 1000 i 390 × 844 px potwierdzają czytelny panel, brak poziomego scrolla i kontrast ikony daty; klawiatura ujawnia fokus na kontrolkach.
+- [x] 3.6 Kontrola Home, timeline i logowania potwierdza brak zamierzonej zmiany ich wyglądu po dodaniu lokalnego motywu.
 
 ### Phase 4: Stany i zabezpieczenia
 
