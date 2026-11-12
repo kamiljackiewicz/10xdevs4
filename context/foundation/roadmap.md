@@ -3,7 +3,7 @@ project: MedLabTimeline
 version: 1
 status: active
 created: 2026-09-21
-updated: 2026-09-30
+updated: 2026-11-13
 prd_version: 1
 main_goal: market-feedback
 top_blocker: decisions
@@ -119,7 +119,7 @@ What's already in place in the codebase as of `2026-09-21` (auto-researched + us
 - **Parallel with:** S-02
 - **Blockers:** —
 - **Unknowns:**
-  - Which parameters and blood-test result formats will be supported in the first flow? — Owner: user. Block: yes.
+  - Resolved in the [S-03 plan brief](../changes/review-imported-blood-result/plan-brief.md#key-decisions-made): all reported numeric and textual parameters in the five supplied layouts — Diagnostyka, ALAB, Synevo, RED Laboratories, and Biovis — with browser-local extraction. This is not universal laboratory/template support. Scope decision resolved; Phase 1 extraction verification remains pending in the [implementation plan](../changes/review-imported-blood-result/plan.md#progress).
   - What acceptance criteria must US-01 satisfy? — Owner: user. Block: no.
 - **Risk:** The first supported import must be narrow enough to make extraction reviewable; treating every laboratory format as supported would make reliability unverifiable.
 - **Status:** planning
@@ -155,13 +155,13 @@ What's already in place in the codebase as of `2026-09-21` (auto-researched + us
 | F-01 | patient-data-access-contract | Establish patient data access and approval boundaries | yes | Unlocks every caregiver data flow. |
 | S-01 | create-patient-profile | Let a caregiver create a private patient profile | no | Requires F-01. |
 | S-02 | record-dated-timeline-note | Let a caregiver record a dated timeline note | no | Requires S-01. |
-| S-03 | review-imported-blood-result | Let a caregiver review and approve a supported imported result | no | Blocked by supported parameters and PDF formats. |
+| S-03 | review-imported-blood-result | Let a caregiver review and approve a supported imported result | yes | [Plan exists](../changes/review-imported-blood-result/plan.md); supported layouts and parameters are decided. Phase 1 five-template extraction and resource-limit verification remain pending; implementation is not complete. |
 | S-04 | view-reviewed-result-comparison | Show approved changes with dated timeline notes | no | Requires S-02 and S-03. |
 | S-05 | correct-approved-result | Let a caregiver correct an approved result | no | Requires S-03. |
 
 ## Open Roadmap Questions
 
-1. **Which parameters and blood-test result formats will be supported in the first flow?** — Owner: user. Block: S-03, S-04, S-05.
+1. **Resolved: supported parameters and result formats for S-03.** — All reported numeric and textual parameters in the five supplied layouts (Diagnostyka, ALAB, Synevo, RED Laboratories, Biovis), extracted locally in the browser; no universal laboratory/template support. Source: [S-03 plan brief](../changes/review-imported-blood-result/plan-brief.md#key-decisions-made). This scope decision no longer blocks planning; [Phase 1 verification](../changes/review-imported-blood-result/plan.md#progress) remains pending.
 2. **What document volume and usage frequency are expected?** — Owner: user. Block: roadmap-wide.
 3. **What measurable outcome proves the primary success criterion?** — Owner: user. Block: roadmap-wide.
 4. **What acceptance criteria must US-01 satisfy?** — Owner: user. Block: S-03, S-04.
