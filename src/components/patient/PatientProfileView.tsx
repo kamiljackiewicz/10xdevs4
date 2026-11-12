@@ -178,7 +178,11 @@ export default function PatientProfileView({
             </div>
           )}
           <div className="flex flex-wrap items-center gap-3">
-            <Button type="submit" disabled={pending} className="relative h-auto max-w-full px-10 whitespace-normal">
+            <Button
+              type="submit"
+              disabled={pending}
+              className="relative h-auto max-w-full px-10 whitespace-normal has-[>svg]:px-10"
+            >
               <LoaderCircle
                 aria-hidden="true"
                 className={cn(

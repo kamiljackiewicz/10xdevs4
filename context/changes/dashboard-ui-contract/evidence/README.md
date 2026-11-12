@@ -1,5 +1,9 @@
 # Dashboard UI evidence
 
+## F1 review correction — 2026-11-13
+
+The review found that shared Button's `has-[>svg]:px-3` overrode plain `px-10`, allowing the pending spinner to overlap the label. The profile submit Button now adds local `has-[>svg]:px-10`. Native Chrome confirmed separate spinner/text and stable save/cancel positions in PL/EN at desktop 1440 × 1000 and mobile 390 × 844. Lint, Astro check and build passed. Final correction captures are in `f1/`: `desktop-pl-idle.png`, `desktop-pl-pending.png`, `desktop-en-idle.png`, `desktop-en-pending.png`, `mobile-pl-idle.png`, `mobile-pl-pending.png`, `mobile-en-idle.png`, `mobile-en-pending.png`. Earlier phase-4 captures remain historical evidence and contain the now-fixed overlap.
+
 ## Scope and provenance
 
 The phase 3 render checks and screenshot inventory are in [phase-3/README.md](phase-3/README.md). They use synthetic data; no pre-change screenshot baseline was available. Existing phase 3 captures must not be presented as a before/after pixel comparison.
