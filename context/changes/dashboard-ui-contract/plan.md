@@ -272,12 +272,12 @@ Brak migracji danych, nowych sekretów i zmian API. Wdrożenie poza zakresem pla
 
 #### Automated
 
-- [x] 4.1 Końcowe `npm run lint`, `npx astro check`, `npm run build`, `npm run test:unit` oraz smoke przeciw lokalnej aplikacji przechodzą po zmianach fazy 4.
-- [x] 4.2 Guard odrzuca fixture z kolorem palety i akceptuje fixture z rolami semantycznymi; skan trzech plików widoku pozostaje zerowy.
-- [x] 4.3 Żądanie `/dev/dashboard-ui` do lokalnego podglądu produkcyjnego buildu zwraca 404, a demonstracja w trybie dev nie wysyła żądań do API profilu.
+- [x] 4.1 Końcowe `npm run lint`, `npx astro check`, `npm run build`, `npm run test:unit` oraz smoke przeciw lokalnej aplikacji przechodzą po zmianach fazy 4. — 31b6289
+- [x] 4.2 Guard odrzuca fixture z kolorem palety i akceptuje fixture z rolami semantycznymi; skan trzech plików widoku pozostaje zerowy. — 31b6289
+- [x] 4.3 Żądanie `/dev/dashboard-ui` do lokalnego podglądu produkcyjnego buildu zwraca 404, a demonstracja w trybie dev nie wysyła żądań do API profilu. — 31b6289
 
 #### Manual
 
-- [x] 4.4 Macierz siedmiu stanów jest pokazana i opisana: default, hover, focus-visible, disabled, error, empty i loading; użycie klawiatury, czytelność disabled, komunikaty i stabilność pending są potwierdzone na renderze.
-- [x] 4.5 Końcowe zrzuty desktop 1440 × 1000 i mobile 390 × 844 dla PL/EN w evidence potwierdzają brak obcięcia treści, czytelny kontrast tekstu i kontrolek oraz kalendarza.
-- [x] 4.6 Przegląd potwierdza pokrycie C1–C5, regułę poza blokiem CLI oraz gotowość do `/10x-impl-review dashboard-ui-contract`; ewentualne nowe ustalenia mają jawny triage.
+- [x] 4.4 Macierz siedmiu stanów jest pokazana i opisana: default, hover, focus-visible, disabled, error, empty i loading; użycie klawiatury, czytelność disabled, komunikaty i stabilność pending są potwierdzone na renderze. — 31b6289
+- [x] 4.5 Końcowe zrzuty desktop 1440 × 1000 i mobile 390 × 844 dla PL/EN w evidence potwierdzają brak obcięcia treści, czytelny kontrast tekstu i kontrolek oraz kalendarza. — 31b6289
+- [x] 4.6 Przegląd potwierdza pokrycie C1–C5, regułę poza blokiem CLI oraz gotowość do `/10x-impl-review dashboard-ui-contract`; ewentualne nowe ustalenia mają jawny triage. — 31b6289
