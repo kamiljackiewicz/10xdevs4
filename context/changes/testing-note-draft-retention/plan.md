@@ -221,16 +221,16 @@ Brak migracji danych i wdrożenia produkcyjnego. Zmiana dotyczy devDependencies,
 
 #### Automated
 
-- [x] 1.1 `npm run test:interaction` przechodzi bez sekretów i usług; test potwierdza przechwycony POST oraz zachowane pola po JSON 500.
-- [x] 1.2 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą po dodaniu konfiguracji.
+- [x] 1.1 `npm run test:interaction` przechodzi bez sekretów i usług; test potwierdza przechwycony POST oraz zachowane pola po JSON 500. — b069ec9
+- [x] 1.2 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą po dodaniu konfiguracji. — b069ec9
 
 ### Phase 2: Dowód ochrony szkicu R2
 
 #### Automated
 
-- [ ] 2.1 `npm run test:interaction` potwierdza zachowanie treści i daty dla tworzenia/edycji w PL/EN przy 400, 401, 409, 500, błędzie transportu i nieczytelnym body odpowiedzi błędnej.
-- [ ] 2.2 `npm run test:interaction` potwierdza kontrolowany pending, odblokowanie i dalszą edycję po błędzie, lokalną walidację bez HTTP oraz brak automatycznego retry w zakończonym scenariuszu niejednoznacznym.
-- [ ] 2.3 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą po rozszerzeniu testów.
+- [x] 2.1 `npm run test:interaction` potwierdza zachowanie treści i daty dla tworzenia/edycji w PL/EN przy 400, 401, 409, 500, błędzie transportu i nieczytelnym body odpowiedzi błędnej.
+- [x] 2.2 `npm run test:interaction` potwierdza kontrolowany pending, odblokowanie i dalszą edycję po błędzie, lokalną walidację bez HTTP oraz brak automatycznego retry w zakończonym scenariuszu niejednoznacznym.
+- [x] 2.3 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą po rozszerzeniu testów.
 
 ### Phase 3: Bramka CI i cookbook
 
