@@ -236,6 +236,6 @@ Brak migracji danych i wdrożenia produkcyjnego. Zmiana dotyczy devDependencies,
 
 #### Automated
 
-- [x] 3.1 Próby tymczasowego wyczyszczenia body i resetu event_date powodują porażki właściwych asercji R2; komponent po próbach jest identyczny z wejściem.
-- [x] 3.2 `npm run test:interaction`, `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą na przywróconym kodzie; krok interakcji jest obowiązkowy w istniejącym zadaniu CI.
-- [x] 3.3 README i cookbook §6.1 wskazują istniejący test referencyjny, jego rzeczywistą nazwę i działającą komendę; status rollout 1 odzwierciedla zamknięcie kryteriów.
+- [x] 3.1 Próby tymczasowego wyczyszczenia body i resetu event_date powodują porażki właściwych asercji R2; komponent po próbach jest identyczny z wejściem. — d5650d2
+- [x] 3.2 `npm run test:interaction`, `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą na przywróconym kodzie; krok interakcji jest obowiązkowy w istniejącym zadaniu CI. — d5650d2
+- [x] 3.3 README i cookbook §6.1 wskazują istniejący test referencyjny, jego rzeczywistą nazwę i działającą komendę; status rollout 1 odzwierciedla zamknięcie kryteriów. — d5650d2
