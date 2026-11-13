@@ -118,6 +118,6 @@ Brak migracji i wdrożenia. Nowy moduł nie ma jeszcze konsumenta; jego późnie
 
 #### Automated
 
-- [x] 1.1 `node --experimental-strip-types --test scripts/result-history-date.test.mjs` przechodzi dla zatwierdzonych priorytetów, źródeł, braków i błędów dat; wykonanie TDD zawiera wykazany RED przed implementacją.
-- [x] 1.2 Test selektora przechodzi również przez `TZ=Pacific/Kiritimati node --experimental-strip-types --test scripts/result-history-date.test.mjs` i `TZ=America/Los_Angeles node --experimental-strip-types --test scripts/result-history-date.test.mjs`, z tymi samymi oczekiwanymi dniami.
-- [x] 1.3 `npm run test:unit`, `npm run test:interaction`, `npm run lint`, `npx astro check` i `npm run build` przechodzą po zmianie.
+- [x] 1.1 `node --experimental-strip-types --test scripts/result-history-date.test.mjs` przechodzi dla zatwierdzonych priorytetów, źródeł, braków i błędów dat; wykonanie TDD zawiera wykazany RED przed implementacją. — 9584788
+- [x] 1.2 Test selektora przechodzi również przez `TZ=Pacific/Kiritimati node --experimental-strip-types --test scripts/result-history-date.test.mjs` i `TZ=America/Los_Angeles node --experimental-strip-types --test scripts/result-history-date.test.mjs`, z tymi samymi oczekiwanymi dniami. — 9584788
+- [x] 1.3 `npm run test:unit`, `npm run test:interaction`, `npm run lint`, `npx astro check` i `npm run build` przechodzą po zmianie. — 9584788
