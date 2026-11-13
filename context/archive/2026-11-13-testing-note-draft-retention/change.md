@@ -1,10 +1,10 @@
 ---
 change_id: testing-note-draft-retention
 title: Ochrona szkicu notatki
-status: impl_reviewed
+status: archived
 created: 2026-11-13
 updated: 2026-11-13
-archived_at: null
+archived_at: 2026-11-13T01:18:54Z
 ---
 
 ## Notes

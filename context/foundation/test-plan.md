@@ -57,7 +57,7 @@ Challenger findings: import jest przyszłą powierzchnią, nie istniejącą regr
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Ochrona szkicu notatki | Udowodnić zachowanie treści i daty po błędzie zapisu. | R2 | interaction/integration | complete | context/changes/testing-note-draft-retention/ |
+| 1 | Ochrona szkicu notatki | Udowodnić zachowanie treści i daty po błędzie zapisu. | R2 | interaction/integration | complete | context/archive/2026-11-13-testing-note-draft-retention/ |
 | 2 | Prywatność i chronologia | Uzupełnić rzeczywiste luki izolacji i trwałości dat. | R3, R4 | unit + HTTP/database integration | not started | — |
 | 3 | Obsługa formularza profilu | Chronić zapis klawiaturą oraz błędy i pending w PL/EN. | R5 | interaction + selective visual review | not started | — |
 | 4 | Wiarygodność importu | Zweryfikować ekstrakcję i przegląd na niezależnym korpusie. | R1 | corpus + integration | not started | — |
