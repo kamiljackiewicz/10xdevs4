@@ -228,14 +228,14 @@ Brak migracji danych i wdrożenia produkcyjnego. Zmiana dotyczy devDependencies,
 
 #### Automated
 
-- [x] 2.1 `npm run test:interaction` potwierdza zachowanie treści i daty dla tworzenia/edycji w PL/EN przy 400, 401, 409, 500, błędzie transportu i nieczytelnym body odpowiedzi błędnej.
-- [x] 2.2 `npm run test:interaction` potwierdza kontrolowany pending, odblokowanie i dalszą edycję po błędzie, lokalną walidację bez HTTP oraz brak automatycznego retry w zakończonym scenariuszu niejednoznacznym.
-- [x] 2.3 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą po rozszerzeniu testów.
+- [x] 2.1 `npm run test:interaction` potwierdza zachowanie treści i daty dla tworzenia/edycji w PL/EN przy 400, 401, 409, 500, błędzie transportu i nieczytelnym body odpowiedzi błędnej. — 3da2465
+- [x] 2.2 `npm run test:interaction` potwierdza kontrolowany pending, odblokowanie i dalszą edycję po błędzie, lokalną walidację bez HTTP oraz brak automatycznego retry w zakończonym scenariuszu niejednoznacznym. — 3da2465
+- [x] 2.3 `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą po rozszerzeniu testów. — 3da2465
 
 ### Phase 3: Bramka CI i cookbook
 
 #### Automated
 
-- [ ] 3.1 Próby tymczasowego wyczyszczenia body i resetu event_date powodują porażki właściwych asercji R2; komponent po próbach jest identyczny z wejściem.
-- [ ] 3.2 `npm run test:interaction`, `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą na przywróconym kodzie; krok interakcji jest obowiązkowy w istniejącym zadaniu CI.
-- [ ] 3.3 README i cookbook §6.1 wskazują istniejący test referencyjny, jego rzeczywistą nazwę i działającą komendę; status rollout 1 odzwierciedla zamknięcie kryteriów.
+- [x] 3.1 Próby tymczasowego wyczyszczenia body i resetu event_date powodują porażki właściwych asercji R2; komponent po próbach jest identyczny z wejściem.
+- [x] 3.2 `npm run test:interaction`, `npm run test:unit`, `npm run lint`, `npx astro check` i `npm run build` przechodzą na przywróconym kodzie; krok interakcji jest obowiązkowy w istniejącym zadaniu CI.
+- [x] 3.3 README i cookbook §6.1 wskazują istniejący test referencyjny, jego rzeczywistą nazwę i działającą komendę; status rollout 1 odzwierciedla zamknięcie kryteriów.

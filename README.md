@@ -56,12 +56,23 @@ npm run dev
 ```bash
 npm run lint
 npm run test:unit
+npm run test:interaction
 npx astro check
 npm run build
 npm run preview
 BASE_URL=http://localhost:4321 npm run smoke
 npm run test:supabase-access
 ```
+
+`npm run test:interaction` runs the note-form interaction tests in jsdom without
+Astro, a database, or secrets. The reference case in
+[`tests/interaction/timeline-note-draft.test.tsx`](tests/interaction/timeline-note-draft.test.tsx)
+is `create / PL > JSON 500 preserves the draft and allows further editing`.
+The suite checks create/edit in PL/EN, failed saves, pending controls, and local
+validation. It proves draft retention in an open form; it does not verify Astro
+hydration, native date-picker behavior, or persistence after reload. See the
+[test cookbook §6.1](context/foundation/test-plan.md#61-zachowanie-szkicu-po-błędzie)
+for the pattern used to add another case.
 
 `npm run smoke` verifies login/session/logout, anonymous denial, profile API
 guards, creation, duplicate rejection, editing, persisted server-rendered values,

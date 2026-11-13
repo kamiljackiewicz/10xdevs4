@@ -57,7 +57,7 @@ Challenger findings: import jest przyszłą powierzchnią, nie istniejącą regr
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Ochrona szkicu notatki | Udowodnić zachowanie treści i daty po błędzie zapisu. | R2 | interaction/integration | planned | context/changes/testing-note-draft-retention/ |
+| 1 | Ochrona szkicu notatki | Udowodnić zachowanie treści i daty po błędzie zapisu. | R2 | interaction/integration | complete | context/changes/testing-note-draft-retention/ |
 | 2 | Prywatność i chronologia | Uzupełnić rzeczywiste luki izolacji i trwałości dat. | R3, R4 | unit + HTTP/database integration | not started | — |
 | 3 | Obsługa formularza profilu | Chronić zapis klawiaturą oraz błędy i pending w PL/EN. | R5 | interaction + selective visual review | not started | — |
 | 4 | Wiarygodność importu | Zweryfikować ekstrakcję i przegląd na niezależnym korpusie. | R1 | corpus + integration | not started | — |
@@ -100,7 +100,15 @@ Opis CI w AGENTS jest częściowo nieaktualny: źródłem prawdy jest workflow n
 
 ### 6.1 Zachowanie szkicu po błędzie
 
-TBD — see §3 Phase 1.
+- **Lokalizacja i wzorzec:** [`tests/interaction/timeline-note-draft.test.tsx`](../../tests/interaction/timeline-note-draft.test.tsx). Nazwy grup: `create / PL`, `create / EN`, `edit / PL`, `edit / EN`; nazwa przypadku wskazuje awarię i wynik. Referencja: `create / PL > JSON 500 preserves the draft and allows further editing`.
+- **Uruchomienie:** `npm run test:interaction`; pojedynczy plik: `npm run test:interaction -- tests/interaction/timeline-note-draft.test.tsx`. Ta sama komenda całego zestawu jest obowiązkowym krokiem zadania `ci` w `.github/workflows/ci.yml`, po `test:unit`, przed Astro check/build, na Node 22.23.2.
+- **Dostarczone narzędzia:** Vitest 5.1.0, jsdom 31.0.0, React Testing Library 16.3.3, user-event 14.6.10, `@testing-library/dom` 10.4.2, MSW 3.0.5 i Vite 8.3.0 (wersje z lockfile; checked: 2026-11-13). Osobny `vitest.config.ts` obsługuje JSX, alias `@/`, URL `http://localhost` i wyłącznie `tests/interaction/**/*.test.tsx`.
+- **Rzeczywisty formularz:** renderuj `TimelineNotes` z rzeczywistym słownikiem `messages` i walidatorem; używaj etykiet i przycisków przez Testing Library/user-event. Nie mockuj hooków, setterów ani handlerów komponentu. W edycji zapisana notatka musi różnić się od szkicu w obu polach.
+- **Granica HTTP:** `tests/interaction/http.ts` udostępnia MSW w Node. Handler przypadku rejestruje metodę, URL, Content-Type i JSON przed zwróceniem kontrolowanej awarii. Adapter względnego fetch instalowany po starcie MSW rozwiązuje URL względem okna i deleguje żądanie, bez zastępowania odpowiedzi. Nie uruchamiaj Astro, kont ani bazy dla tej kontroli.
+- **Wyrocznia i asercje:** używaj jawnych literałów daty i wieloliniowej treści ze skrajnymi spacjami. Porównuj surowe wartości DOM po błędzie niezależnie od znormalizowanego payloadu; nie wyliczaj oczekiwań produkcyjnym normalizatorem. Sprawdź właściwy komunikat, powiązanie błędu pola, pozostanie formularza i rzeczywistą dalszą edycję daty/tekstu. Zestaw obejmuje 400/401/409/500, błąd transportu i nie-JSON 502 w obu trybach i językach.
+- **Pending i walidacja lokalna:** steruj odpowiedzią przez obietnicę, zwalnianą w `finally`; sprawdzaj zachowany szkic, odziedziczoną blokadę kontrolek przez fieldset, brak drugiego żądania po kliknięciu i odblokowanie po błędzie. Bez arbitralnych sleep. Lokalna data sprzed urodzenia z niepustą treścią wymaga błędu pola i zera HTTP, zliczanego przez catch-all MSW.
+- **Izolacja:** `tests/interaction/setup.ts` uruchamia MSW z `onUnhandledFrame: "error"`; po każdym teście czyści DOM, resetuje handlery i przywraca transport, a po zestawie zamyka serwer. API Vitest importuj jawnie. Nie dodawaj przeglądarkowego `mockServiceWorker.js`.
+- **Granice gwarancji:** test chroni pamięciowy szkic w zamontowanym formularzu po rozstrzygniętym błędzie. Ostrzeżenie przy niejednoznacznym wyniku zaleca sprawdzenie osi czasu; pojedyncze żądanie nie dowodzi odrzucenia zapisu w bazie ani idempotencji ponowienia. Ten wzorzec nie potwierdza hydratacji Astro, natywnego date-picker, trwałości po reloadzie/nawigacji/logowaniu ani nieskończenie zawieszonego połączenia.
 
 ### 6.2 Odmowa dostępu do cudzych danych
 
