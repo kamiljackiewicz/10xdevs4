@@ -23,115 +23,38 @@ Use @README.md for local setup and @package.json for scripts and dependencies. D
 
 <!-- BEGIN @przeprogramowani/10x-cli -->
 
-## Zestaw narzędzi AI 10xDevs — Moduł 3, Lekcja 2
+## Zestaw narzędzi AI 10xDevs — Moduł 3, Lekcja 4 (testy E2E)
 
-Lekcja 2 dotyczy **pisania testów, które faktycznie chronią kod** — nie tylko maksymalizowania pokrycia. Problem wyroczni oraz antywzorce vibe-testingu wyjaśniają, dlaczego testy generowane przez LLM zawodzą na rzeczywistym kodzie; rozwiązaniem jest kontrakt jakości oparty na ryzyku z Lekcji 1.
+**W przypadku testów E2E użyj dwóch umiejętności M3L4 w tej kolejności:**
 
-```
-context/foundation/test-plan.md (§3 Phased Rollout)
-        │
-        ▼  (one rollout phase at a time)
-   /10x-research  ──►  research.md  (oracle source: what code should do, not what it does)
-        │
-        ▼
-   /10x-plan  ──►  plan.md  (cost × signal, two-layer strategy, ordered phases)
-        │
-        ▼
-   /10x-implement  or  /10x-tdd   ──►  working tests + §6 cookbook update
-```
+1. **`/10x-e2e-setup`** — jednorazowa konfiguracja: konfiguracja Playwright (`webServer`,
+   projekt `setup` autoryzacji, `storageState`), zielony test seed oraz `context/foundation/test-stack.md`.
+2. **`/10x-e2e`** — pętla dla każdego ryzyka: ryzyko → eksploracja działającej aplikacji za pomocą
+   `playwright-cli` → generowanie → przegląd względem pięciu antywzorców →
+   ponowne wywołanie promptu po nazwie → weryfikacja przez celowe zepsucie.
 
-`/10x-tdd` to **opcjonalny tryb test-first**, a nie zamiennik dla łańcucha. Odczytuje ten sam `plan.md`, zapisuje do tej samej sekcji `## Progress` i obejmuje te same fazy co `/10x-implement`. Używaj go wyłącznie wtedy, gdy potrafisz nazwać pierwszą nieprzechodzącą asercję przed napisaniem jakiegokolwiek kodu.
+Katalogi `references/` umiejętności zawierają pełne reguły, antywzorce, wzorzec seed oraz
+szablon promptu.
 
-### Router zadań — od czego zacząć
+Kilka twardych zasad obowiązujących jeszcze przed wywołaniem umiejętności:
 
-| Umiejętność / Prompt | Użyj, gdy |
-| --- | --- |
-| `/10x-research` | Przed napisaniem jakiegokolwiek testu dla ryzyka. Research tworzy wyrocznię — jakie zachowanie test musi udowodnić — na podstawie źródeł (PRD, tech-stack, dokumentacja), a nie kształtu implementacji. Ujawnia również, czy dane ryzyko jest już pokryte albo ma dwa odrębne oblicza (jedno bezpieczne, jedno rzeczywiste). |
-| `/10x-plan` | Research jest ukończony. Plan rozkłada ryzyko na uporządkowane fazy: najpierw konfiguracja środowiska, potem reguły od niego zależne, następnie hermetyczne stuby dla awarii, których prawdziwa infrastruktura nie może wywołać, a na końcu aktualizacja cookbooka. Każda faza wskazuje zachowanie, które asercja sprawdza, oraz regresję, którą wykrywa. |
-| `/10x-implement` | Domyślny wykonawca faz planu. Używaj do konfiguracji środowiska, istniejącego kodu, scaffoldingu oraz każdej fazy, w której nie potrafisz zdefiniować czerwonego testu przed napisaniem kodu. |
-| `/10x-tdd` | Opcjonalnie. Użyj zamiast `/10x-implement` dla fazy, w której potrafisz nazwać pierwszy czerwony test w jednym zdaniu. Agent najpierw pisze nieprzechodzący test, następnie minimalny kod, który sprawia, że przechodzi, a potem refaktoryzuje. Zatrzymuje się na asercji, zanim dotknie implementacji — ta pauza jest sednem. |
-| Prompt `m3l2-ad-hoc-testing` | Masz pojedynczy plik i chcesz testy teraz, bez pełnego cyklu research→plan→implement. Prompt wymusza wyrocznię ze źródeł (czyta PRD + TECH_STACK przed dodaniem asercji), asercje behawioralne, przypadki brzegowe wynikające z ryzyka oraz tabelę regresji. Używaj go ze świadomością, że wymieniasz głębię na szybkość. |
+- **Lokatory:** najpierw `getByRole` / `getByLabel` / `getByText`; `getByTestId`
+  tylko wtedy, gdy atrybuty dostępności są niejednoznaczne. Nigdy selektory CSS, XPath
+  ani struktura DOM.
+- **Nigdy `page.waitForTimeout()`.** Czekaj na stan: `toBeVisible()`,
+  `waitForURL()`, `waitForResponse()`.
+- **Niezależność testów + sprzątanie.** Każdy test uruchamia się samodzielnie — ma własną konfigurację,
+  akcję, asercję i sprzątanie; unikalne id (sufiks timestamp), aby uruchomienia równoległe
+  i ponowne uruchomienia nie kolidowały.
 
-### Kiedy używać `/10x-tdd` vs `/10x-implement`
+Dwie granice, które należy wyraźnie rozróżniać:
 
-Pytanie decydujące: *Czy potrafisz nazwać pierwszy czerwony test w jednym zdaniu?*
-
-Dobre warunki dla `/10x-tdd`:
-- "promuje wyłącznie drafty w stanie `accepted`, a `pending`/`rejected` nigdy nie trafiają do talii"
-- "zwraca `ok: true` i loguje `orphan_review_state`, gdy upsert stanu powtórek padnie w trakcie zapisu"
-- "zwraca 401, gdy użytkownik nie ma dostępu do kursu"
-- "resetuje interwał powtórki do jednego dnia, gdy ocena wynosi 0"
-
-Każde z nich wskazuje obserwowalny rezultat, a nie wewnętrzny szczegół. Jeśli nie potrafisz utworzyć takiego zdania, pozostań przy `/10x-implement` albo wróć do `/10x-research`.
-
-`/10x-tdd` **nie nadaje się** do: konfiguracji środowiska, konfiguracji CI/CD, dokumentacji, cienkiego okablowania, gdzie test jedynie przepisywałby implementację, ani spike'a, w którym nadal odkrywasz kontrakt.
-
-Możesz łączyć oba tryby w jednym planie:
-
-```
-/10x-implement <change-id> phase 1   # environment
-/10x-tdd       <change-id> phase 2   # contract (new code)
-/10x-tdd       <change-id> phase 3   # contract (API endpoint)
-/10x-implement <change-id> phase 4   # cookbook + plan sync
-```
-
-Oba zapisują postęp w tej samej sekcji `## Progress` w `plan.md`.
-
-### Dwuwarstwowa strategia testowania (cost × signal)
-
-Dla każdego ryzyka wybierz **najtańszy test, który daje rzeczywisty sygnał**. Nie wybieraj domyślnie e2e „bo jest najbezpieczniejsze” i nie ścigaj procentu pokrycia.
-
-| Warstwa | Kiedy używać | Kiedy NIE używać |
-| --- | --- | --- |
-| Integracja (prawdziwa DB / prawdziwa infra) | Reguła obejmuje ograniczenia DB, kaskady, prawdziwy SQL lub ograniczenia unikalności, co do których mock kłamałby. | Przepływy auth chronione przez RLS, które należą do osobnej fazy; wszystko, gdzie koszt konfiguracji przewyższa wartość sygnału. |
-| Hermetyczne (klient stub) | Częściowe awarie, których prawdziwa infrastruktura nie może łatwo wywołać (np. druga operacja w sekwencji zawodzi). | Reguły zależne od faktycznego stanu DB — stub będzie kłamał na temat naruszeń ograniczeń i kaskad. |
-
-Nieatomowa sekwencja zapisu (wiele niezależnych operacji bez transakcji) oznacza: pisz hermetyczne testy dla gałęzi częściowych awarii, a nie testy integracyjne wymuszające błąd w środku sekwencji.
-
-### Reguły wyroczni
-
-- Wyrocznia — to, co kod *powinien* robić — musi pochodzić ze źródeł: PRD, dokumentacji, ograniczeń tech-stacka, wiedzy domenowej. **Nie może** pochodzić z czytania implementacji.
-- Jeśli implementacja zawiera błąd, skopiowanie jej wyniku jako oczekiwanej wartości tworzy test lustrzany, który przechodzi mimo błędu.
-- Gdy źródła nie rozstrzygają oczekiwanego zachowania jednoznacznie, **zatrzymaj się i zapytaj**, zamiast zgadywać.
-- Zadaniem researchu jest ujawnienie wyroczni przed napisaniem jakiegokolwiek testu.
-
-### Antywzorce vibe-testingu, których należy unikać
-
-| Antywzorzec | Jak wygląda | Co zrobić zamiast |
-| --- | --- | --- |
-| Lustrzana implementacja | Asercja oblicza oczekiwaną wartość tą samą logiką co testowany kod. | Asercja powinna opierać się na wartości wynikającej z wyroczni (PRD / reguła domenowa), a nie z implementacji. |
-| Tylko happy paths | Testy przekazują wyłącznie poprawne wejścia; brak przypadków brzegowych. | Dodaj co najmniej jeden przypadek brzegowy na ryzyko: `null`, pusty, błąd zależności, niepoprawne wejście. |
-| Redundantne kopie | Sześć niemal identycznych testów sprawdzających ten sam brak sentinela. | Jeden sparametryzowany test (`it.each`) na właściwość; każdy test wykrywa inną regresję. |
-
-### Testowanie mutacyjne (Stryker) — selektywna bramka jakości
-
-Pokrycie mówi: „ta linia została wykonana”. Wynik mutacji mówi: „czy test nie przeszedłby, gdybym zepsuł tę linię?”. Używaj Strykera jako **selektywnej bramki** po fazie ryzyka, a nie jako bramki CI przy każdym commicie.
-
-Przebieg pracy:
-1. Testy przechodzą dla fazy ryzyka.
-2. Uruchom `npx stryker run --mutate "path/to/file.ts"` (zawęź zakres do zmienionego modułu).
-3. Otwórz raport HTML; znajdź mutanty, które przetrwały.
-4. Dla każdego mutanta, który przetrwał, zapytaj: „Czy ta zmiana zaszkodziłaby użytkownikowi lub biznesowi?”
-   - Tak → dodaj asercję, która zabija mutanta.
-   - Nie (równoważny mutant lub kosmetyczna zmiana) → świadomie zignoruj.
-5. Nie ścigaj 100% wyniku mutacji. Test, który przypina szczegóły implementacji, aby zabić kosmetycznego mutanta, sam jest vibe testem.
-
-Bramka integracyjna może pozostać **ad hoc** (nie przy każdym commicie), gdy uruchamianie lokalnej infrastruktury jest kosztowne. Oznacz to odpowiednio w `test-plan.md §4`.
-
-### Granice lekcji
-
-- Nie konfiguruj hooków, cyklu życia hooków ani debugowania hooków. To Lekcja 3.
-- Nie konfiguruj serwerów MCP, API Playwright, kodu e2e ani kodu scenariuszy multimodalnych. To Lekcja 4.
-- Nie uruchamiaj workflow bug-to-fix-to-regression-test. To Lekcja 5.
-- Nie twórz od zera pipeline'ów CI/CD. To Moduł 1 Lekcja 5 / Moduł 2 Lekcja 5.
-- Nie uruchamiaj `/10x-test-plan`, aby zmienić strategię ryzyka. To Lekcja 1. Użyj `/10x-test-plan --status`, aby odczytać bieżący stan.
-- Nie pisz testów bez kroku researchu, chyba że używasz promptu ad-hoc z pełną świadomością jego kompromisów.
-
-### Ścieżki używane przez tę lekcję
-
-- `context/foundation/test-plan.md` — stan wdrożenia §3; cookbook §6 (uzupełniany wraz z dostarczaniem faz)
-- `context/changes/<change-id>/research.md` — źródło wyroczni dla każdej fazy wdrożenia
-- `context/changes/<change-id>/plan.md` — uporządkowane fazy z `## Progress` jako stanem wykonania
-- `the AI tool's configuration directory/prompts/m3l2-ad-hoc-testing.md` — prompt do testowania ad-hoc na poziomie pliku
+- **DOM (snapshot) jest domyślny.** Wizja (`--caps=vision`) jest uzupełnieniem dla
+  ryzyk wyłącznie wizualnych (układ, z-index, animacja); w przypadku regresji pikselowych preferuj
+  deterministyczne narzędzia (`toHaveScreenshot`, Argos, Lost Pixel). Wybór/koszt modelu VLM
+  to temat debugowania (Lekcja 5), nie testowania.
+- **Czerwony test to sygnał, a nie obowiązek do odhaczenia.** Zmieniony selektor → zaktualizuj
+  lokator w sprawdzonym diffie. Zmienione zachowanie biznesowe → test wykrył
+  błąd; nigdy nie edytuj asercji, aby je dopasować. Naprawianie nieudanych testów to Lekcja 5.
 
 <!-- END @przeprogramowani/10x-cli -->
