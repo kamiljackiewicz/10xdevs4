@@ -23,38 +23,34 @@ Use @README.md for local setup and @package.json for scripts and dependencies. D
 
 <!-- BEGIN @przeprogramowani/10x-cli -->
 
-## Zestaw narzędzi AI 10xDevs — Moduł 3, Lekcja 4 (testy E2E)
+## Zestaw narzędzi AI 10xDevs — Moduł 3, Lekcja 5 (Debugowanie)
 
-**W przypadku testów E2E użyj dwóch umiejętności M3L4 w tej kolejności:**
+Zmień awarię w poprawkę, której agent może bronić: najpierw dowody, potem nieudany test, a następnie poprawka.
 
-1. **`/10x-e2e-setup`** — jednorazowa konfiguracja: konfiguracja Playwright (`webServer`,
-   projekt `setup` autoryzacji, `storageState`), zielony test seed oraz `context/foundation/test-stack.md`.
-2. **`/10x-e2e`** — pętla dla każdego ryzyka: ryzyko → eksploracja działającej aplikacji za pomocą
-   `playwright-cli` → generowanie → przegląd względem pięciu antywzorców →
-   ponowne wywołanie promptu po nazwie → weryfikacja przez celowe zepsucie.
+```
+signal (monitoring | log | flaky E2E | stack trace) -> gather evidence -> reproduce -> failing test -> fix -> verify
+```
 
-Katalogi `references/` umiejętności zawierają pełne reguły, antywzorce, wzorzec seed oraz
-szablon promptu.
+### Router zadań — od czego zacząć
 
-Kilka twardych zasad obowiązujących jeszcze przed wywołaniem umiejętności:
+| Umiejętność | Użyj jej, gdy |
+| --- | --- |
+| `/10x-frame` | Zgłoszenie dociera jako „bug + proposed fix”. Sprawdź, czy zaobserwowany symptom i podana przyczyna faktycznie się zgadzają, zanim ktokolwiek zacznie cokolwiek naprawiać. |
+| `/10x-new` -> `/10x-research` -> `/10x-plan` -> `/10x-implement` | Poprawka to więcej niż jednolinijkowa zmiana. Research zbiera dowody; plan zaczyna się od nieudanego testu regresji. |
+| `/10x-tdd` | Pisanie testu regresji, który odtwarza błąd przed wprowadzeniem poprawki. |
+| `/10x-e2e` | Błąd pojawia się tylko w działającej aplikacji. Odtwórz go w przeglądarce i zachowaj ten test. |
+| `/10x-observability-audit` | Błędy są nieobecne, zaszumione lub niemożliwe do zdiagnozowania na produkcji. Audytuje krytyczne przepływy pod kątem kodu ukrywającego awarie i zapisuje raport z datą w `context/audits/observability/`. Użyj `--verify <report>`, aby ponownie sprawdzić wcześniejszy raport po poprawkach. |
 
-- **Lokatory:** najpierw `getByRole` / `getByLabel` / `getByText`; `getByTestId`
-  tylko wtedy, gdy atrybuty dostępności są niejednoznaczne. Nigdy selektory CSS, XPath
-  ani struktura DOM.
-- **Nigdy `page.waitForTimeout()`.** Czekaj na stan: `toBeVisible()`,
-  `waitForURL()`, `waitForResponse()`.
-- **Niezależność testów + sprzątanie.** Każdy test uruchamia się samodzielnie — ma własną konfigurację,
-  akcję, asercję i sprzątanie; unikalne id (sufiks timestamp), aby uruchomienia równoległe
-  i ponowne uruchomienia nie kolidowały.
+### Twarde zasady
 
-Dwie granice, które należy wyraźnie rozróżniać:
+- **Dowody przed hipotezą.** Korzystaj z tego, co pokazują tracker błędów, logi, odtworzenie problemu i kod. Nigdy nie zgaduj przyczyny wyłącznie na podstawie stack trace.
+- **Błąd najpierw staje się nieudanym testem.** Poprawka jest gotowa, gdy ten test zmienia status z czerwonego na zielony i pozostaje w zestawie testów.
+- **Nigdy nie ukrywaj dowodów.** Żadnych pustych `catch`, żadnych ignorowanych odrzuceń promise, żadnych awarii zamienianych w przekierowania lub `200`s, żadnych pominiętych przyczyn błędów. Jeśli poprawka wymaga `catch`, loguje lub raportuje błąd wraz z jego przyczyną.
+- **Napraw przyczynę, nie test.** Nie edytuj asercji, aby pasowała do nowego zachowania, chyba że zmieniło się samo wymaganie.
 
-- **DOM (snapshot) jest domyślny.** Wizja (`--caps=vision`) jest uzupełnieniem dla
-  ryzyk wyłącznie wizualnych (układ, z-index, animacja); w przypadku regresji pikselowych preferuj
-  deterministyczne narzędzia (`toHaveScreenshot`, Argos, Lost Pixel). Wybór/koszt modelu VLM
-  to temat debugowania (Lekcja 5), nie testowania.
-- **Czerwony test to sygnał, a nie obowiązek do odhaczenia.** Zmieniony selektor → zaktualizuj
-  lokator w sprawdzonym diffie. Zmienione zachowanie biznesowe → test wykrył
-  błąd; nigdy nie edytuj asercji, aby je dopasować. Naprawianie nieudanych testów to Lekcja 5.
+### Granice lekcji
+
+- `/10x-observability-audit` czyta kod i zapisuje raport. Nigdy nie zmienia audytowanego kodu. Naprawianie tego, co znajdzie, przechodzi przez łańcuch zmian.
+- Wybór dostawcy monitoringu należy do `/10x-infra-research`, a nie do tej lekcji.
 
 <!-- END @przeprogramowani/10x-cli -->
