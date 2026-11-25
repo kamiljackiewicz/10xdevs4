@@ -8,7 +8,7 @@ import { test as base, expect } from "@playwright/test";
 export const test = base.extend<{ identityToken: string }>({
   identityToken: async ({ baseURL }, provide, testInfo) => {
     if (!baseURL) throw new Error("E2E baseURL is required");
-    const token = `r4-${randomUUID()}`;
+    const token = `e2e-${randomUUID()}`;
     testInfo.annotations.push({ type: "test-data", description: token });
     await provide(token);
   },
