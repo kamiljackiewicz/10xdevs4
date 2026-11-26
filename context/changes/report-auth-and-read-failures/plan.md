@@ -238,10 +238,10 @@ Bez migracji danych, sekretów ani zmian uprawnień. Wycofanie to zwykły revert
 
 #### Automated
 
-- [x] 3.1 Oba polecenia harnessu przechodzą: baseline pokazuje brak zdarzeń aplikacyjnych, after dokładnie jeden wpis dla każdej obsługiwanej awarii A1/H1, zero dla oczekiwanych stanów oraz zachowane HTTP/UI.
-- [x] 3.2 Końcowe logi sond nie zawierają zasianych sekretów/PII; kontrolny wyjątek Auth zachowuje frameworkowe 500 bez dodatkowego duplikatu aplikacyjnego.
-- [x] 3.3 `npm run lint`, `npm run test:unit`, `npm run test:interaction`, `npx astro check`, `npm run build` i `npx playwright test` przechodzą; brak trwających zmian sond w głównym kodzie.
+- [x] 3.1 Oba polecenia harnessu przechodzą: baseline pokazuje brak zdarzeń aplikacyjnych, after dokładnie jeden wpis dla każdej obsługiwanej awarii A1/H1, zero dla oczekiwanych stanów oraz zachowane HTTP/UI. — 92a7c21
+- [x] 3.2 Końcowe logi sond nie zawierają zasianych sekretów/PII; kontrolny wyjątek Auth zachowuje frameworkowe 500 bez dodatkowego duplikatu aplikacyjnego. — 92a7c21
+- [x] 3.3 `npm run lint`, `npm run test:unit`, `npm run test:interaction`, `npx astro check`, `npm run build` i `npx playwright test` przechodzą; brak trwających zmian sond w głównym kodzie. — 92a7c21
 
 #### Manual
 
-- [x] 3.4 Przejrzano dowód przed/po i potwierdzono, że changed dla A1/H1 nie oznacza zmiany HTTP ani zweryfikowanych alertów produkcyjnych.
+- [x] 3.4 Przejrzano dowód przed/po i potwierdzono, że changed dla A1/H1 nie oznacza zmiany HTTP ani zweryfikowanych alertów produkcyjnych. — 92a7c21

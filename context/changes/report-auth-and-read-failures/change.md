@@ -1,7 +1,7 @@
 ---
 change_id: report-auth-and-read-failures
 title: Zachowanie diagnostyki awarii Auth i odczytu danych
-status: implementing
+status: implemented
 created: 2026-11-26
 updated: 2026-11-26
 archived_at: null
