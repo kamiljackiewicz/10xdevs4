@@ -215,24 +215,24 @@ Bez migracji danych, sekretów ani zmian uprawnień. Wycofanie to zwykły revert
 
 #### Automated
 
-- [x] 1.1 Testy Node potwierdzają klasyfikację sesji, transportu, 5xx i nieznanych błędów oraz kontrolowany schemat zdarzeń: `npm run test:unit`.
-- [x] 1.2 Testy końcowego wyjścia nie znajdują zasianych sekretów/PII w message, details, stack, cause, getterach, toJSON i obiektach cyklicznych; awaria sinka nie rzuca błędu.
-- [x] 1.3 `npm run lint`, `npx astro check` i `npm run build` przechodzą bez nowych zależności.
+- [x] 1.1 Testy Node potwierdzają klasyfikację sesji, transportu, 5xx i nieznanych błędów oraz kontrolowany schemat zdarzeń: `npm run test:unit`. — d543a60
+- [x] 1.2 Testy końcowego wyjścia nie znajdują zasianych sekretów/PII w message, details, stack, cause, getterach, toJSON i obiektach cyklicznych; awaria sinka nie rzuca błędu. — d543a60
+- [x] 1.3 `npm run lint`, `npx astro check` i `npm run build` przechodzą bez nowych zależności. — d543a60
 
 #### Manual
 
-- [x] 1.4 Przejrzano przykładowy JSON i potwierdzono zakres bezpiecznych pól oraz brak obietnicy zachowania oryginalnego stacka.
+- [x] 1.4 Przejrzano przykładowy JSON i potwierdzono zakres bezpiecznych pól oraz brak obietnicy zachowania oryginalnego stacka. — d543a60
 
 ### Phase 2: Podłączenie middleware i odczytów SSR
 
 #### Automated
 
-- [ ] 2.1 `npm run lint`, `npm run test:unit`, `npm run test:interaction`, `npx astro check` i `npm run build` przechodzą.
-- [ ] 2.2 Dotychczasowe przepływy logowania/profilu/osi czasu przechodzą: `npm run smoke` przy działającym lokalnym preview oraz `npx playwright test` z istniejącym dedykowanym kontem E2E.
+- [x] 2.1 `npm run lint`, `npm run test:unit`, `npm run test:interaction`, `npx astro check` i `npm run build` przechodzą.
+- [x] 2.2 Dotychczasowe przepływy logowania/profilu/osi czasu przechodzą: `npm run smoke` przy działającym lokalnym preview oraz `npx playwright test` z istniejącym dedykowanym kontem E2E.
 
 #### Manual
 
-- [ ] 2.3 W PL i EN potwierdzono zachowanie dotychczasowych komunikatów oraz braku dodatkowych danych diagnostycznych w UI i odpowiedziach.
+- [x] 2.3 W PL i EN potwierdzono zachowanie dotychczasowych komunikatów oraz braku dodatkowych danych diagnostycznych w UI i odpowiedziach.
 
 ### Phase 3: Dowód przed/po i dokumentacja
 

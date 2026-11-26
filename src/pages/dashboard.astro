@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase";
 import { patientColumns, utcToday, type Patient } from "@/lib/patient-profile";
 import PatientProfile from "@/components/patient/PatientProfile";
 import { buttonVariants } from "@/components/ui/button";
+import { reportFailure } from "@/lib/server/report-failure";
 
 const { user } = Astro.locals;
 const t = messages[Astro.locals.locale];
@@ -21,10 +22,14 @@ try {
       .select(patientColumns)
       .eq("owner_id", user.id)
       .maybeSingle<Patient>();
+    if (error) {
+      reportFailure({ operation: "patient.read", kind: "result", requestId: Astro.locals.requestId, error });
+    }
     loadFailed = Boolean(error);
     patient = data;
   }
-} catch {
+} catch (error) {
+  reportFailure({ operation: "patient.read", kind: "exception", requestId: Astro.locals.requestId, error });
   loadFailed = true;
 }
 ---
