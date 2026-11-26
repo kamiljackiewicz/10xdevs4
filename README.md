@@ -1,17 +1,38 @@
 # MedLabTimeline
 
-MedLabTimeline helps a caregiver organize a child's blood-test history and prepare for medical consultations. It is designed to show caregiver-reviewed parameter changes alongside dated notes about treatment or recommendations; it does not interpret results, recommend treatment, or replace a doctor.
+MedLabTimeline helps a caregiver keep a private patient profile and a dated timeline of notes about treatment, recommendations, and medical consultations. Blood-test PDF import and parameter comparisons are planned extensions. The application does not interpret results, recommend treatment, or replace a doctor.
 
 ## Project status
 
-The application currently includes the project foundation: email/password authentication, protected routes, and a Cloudflare Workers deployment. The first product milestone is planned publicly in the [GitHub issue backlog](https://github.com/kamiljackiewicz/10xdevs4/issues?q=is%3Aissue%20label%3Aroadmap), including patient profiles, dated notes, reviewed PDF import, chronological comparisons, and correction of approved results.
+[Live application](https://10x-med-lab-timeline.kamil-jack.workers.dev)
 
-The first end-to-end product flow is intentionally limited to a supported subset of blood-test PDFs and parameters. A caregiver must be able to review and correct extracted values before they become approved data.
+Implemented:
+
+- Email/password registration, sign-in, sign-out, and protected dashboard routes.
+- One private patient profile per caregiver, with creation, viewing, and editing.
+- Timeline-note CRUD: create, view, edit, and delete dated notes, persisted in Supabase.
+- Domain rules: valid calendar dates, notes cannot precede the patient's birth date, and newest-event-first ordering after reload. Future-dated notes are allowed.
+- Polish and English interfaces, including validation and error messages.
+- Owner-only access enforced through Supabase RLS, with automated isolation checks.
+- Risk-based unit, interaction, HTTP smoke, and browser E2E tests, plus agent quality hooks and GitHub Actions CI.
+- Structured server diagnostics for unexpected Auth-session and profile/timeline read failures, preserving existing HTTP responses and UI.
+
+Planned: supported blood-test PDF import, caregiver review/correction before approval, comparisons of approved parameters alongside timeline notes, and correction of approved results. These features are not available in the current application. See the [roadmap](context/foundation/roadmap.md) and [GitHub issue backlog](https://github.com/kamiljackiewicz/10xdevs4/issues?q=is%3Aissue%20label%3Aroadmap).
+
+## Try the application
+
+Use synthetic information for a demonstration:
+
+1. Register or sign in at the [live application](https://10x-med-lab-timeline.kamil-jack.workers.dev).
+2. Open the profile, enter synthetic patient details and a birth date, and save. Reload to verify persistence; edit the profile to try validation and updates.
+3. Open `/dashboard/timeline`. Add two notes with different event dates, save, and reload: the later event appears first regardless of insertion order.
+4. Edit a note, then delete it. Try a date before the patient's birth date to see the domain validation.
+5. Switch PL/EN and sign out. Opening `/dashboard` or `/dashboard/timeline` while signed out redirects to the sign-in page.
 
 ## Technology
 
 - Astro, React, TypeScript, and Tailwind CSS
-- Supabase for authentication and planned private data storage
+- Supabase Auth, PostgreSQL with RLS, and a private Storage access foundation
 - Cloudflare Workers for deployment
 
 ## Get started
@@ -62,7 +83,21 @@ npm run build
 npm run preview
 BASE_URL=http://localhost:4321 npm run smoke
 npm run test:supabase-access
+npx playwright test
 ```
+
+### Test coverage and evidence
+
+| Layer               | What it verifies                                                                                     |
+| ------------------- | ---------------------------------------------------------------------------------------------------- |
+| Unit                | Profile/note validation, calendar dates, localization, safe diagnostics, and quality-hook behavior   |
+| Interaction         | Note drafts survive failed saves; create/edit validation and pending controls in PL/EN               |
+| HTTP smoke          | Authentication, profile persistence, timeline-note CRUD, request guards, and language selection      |
+| Supabase access     | Owner isolation, RLS, profile uniqueness, and private Storage boundaries                             |
+| Playwright E2E      | Signed-out redirect (R3), persisted timeline dates/order (R4), and keyboard validation recovery (R5) |
+| Isolated SSR probes | Auth/read failure diagnostics before/after, privacy, expected-state silence, and preserved HTTP/UI   |
+
+The risk register and test strategy are in [test-plan.md](context/foundation/test-plan.md). Browser evidence is recorded for [R4](tests/e2e/timeline-date-order.md) and [R5](tests/e2e/profile-keyboard.md). The [diagnostics verification](context/changes/report-auth-and-read-failures/verification.md) records the 34-case PL/EN before/after matrix and deliberate-break check.
 
 `npm run test:interaction` runs the note-form interaction tests in jsdom without
 Astro, a database, or secrets. The reference case in
@@ -102,9 +137,23 @@ cleanup. Cleanup failures fail the test. CI runs the isolation command even if
 HTTP smoke fails (unless the job is cancelled). Forced process termination cannot
 guarantee cleanup; use any reported synthetic IDs to investigate leftovers.
 
+### Browser E2E setup
+
+Install Chromium once:
+
+```bash
+npx playwright install chromium
+```
+
+Set `E2E_USERNAME` and `E2E_PASSWORD` for a dedicated confirmed test account in ignored `.env.e2e`. The isolated-account specs also require `SUPABASE_URL` and `SUPABASE_TEST_SERVICE_ROLE_KEY` in ignored `.dev.vars`; the administrative key stays in the Node fixture and is never supplied to the browser. Temporary accounts and their profile/note data are cleaned up and checked for leftovers.
+
+Stop any manually started local preview before running `npx playwright test`. Playwright builds the app and starts Workers preview on port 4321; `E2E_PORT` can override it. Tests use the approved remote Supabase project. Authentication state in `playwright/.auth/` is ignored by Git. See [test-stack.md](context/foundation/test-stack.md) for setup details.
+
 ## Deployment
 
-The application is deployed as a Cloudflare Worker. Never add real credentials to the repository, `wrangler.jsonc`, or public issue discussions.
+The application is deployed as a [Cloudflare Worker](https://10x-med-lab-timeline.kamil-jack.workers.dev). The [2026-11-26 release record](context/deployment/2026-11-26-auth-read-diagnostics.md) contains its version, rollback target, and production HTTP/log-stream checks. Never add real credentials to the repository, `wrangler.jsonc`, or public issue discussions.
+
+Local failure probes confirm safe diagnostic emission; production checks confirm normal requests reach the log stream. Production failure-event delivery, log retention, and alert delivery have not been verified.
 
 Authentication uses Supabase cookies. The unused Astro session store is explicitly
 disabled with `session: false` in `astro.config.mjs`, so the Cloudflare adapter does
@@ -123,8 +172,8 @@ Use `npx wrangler deploy` for this project; it is a Workers deployment, not a Cl
 
 ## Product and privacy boundaries
 
-- The MVP covers blood-test results only; EEG and universal laboratory support are outside its first scope.
-- The application presents a chronological record and comparability warnings, never medical conclusions.
+- The current release covers profiles and dated notes. Planned result import is limited to blood tests; EEG and universal laboratory support are outside its first scope.
+- The timeline presents a chronological record, never medical conclusions. Comparability warnings belong to the planned result-comparison feature.
 - Each caregiver accesses only their own single-patient profile in the MVP; profile sharing is deferred.
 - Do not use real patient data until Supabase access policies, private Storage, data region, and retention decisions have been reviewed.
 
