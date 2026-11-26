@@ -227,21 +227,21 @@ Bez migracji danych, sekretów ani zmian uprawnień. Wycofanie to zwykły revert
 
 #### Automated
 
-- [x] 2.1 `npm run lint`, `npm run test:unit`, `npm run test:interaction`, `npx astro check` i `npm run build` przechodzą.
-- [x] 2.2 Dotychczasowe przepływy logowania/profilu/osi czasu przechodzą: `npm run smoke` przy działającym lokalnym preview oraz `npx playwright test` z istniejącym dedykowanym kontem E2E.
+- [x] 2.1 `npm run lint`, `npm run test:unit`, `npm run test:interaction`, `npx astro check` i `npm run build` przechodzą. — 2a8c3f2
+- [x] 2.2 Dotychczasowe przepływy logowania/profilu/osi czasu przechodzą: `npm run smoke` przy działającym lokalnym preview oraz `npx playwright test` z istniejącym dedykowanym kontem E2E. — 2a8c3f2
 
 #### Manual
 
-- [x] 2.3 W PL i EN potwierdzono zachowanie dotychczasowych komunikatów oraz braku dodatkowych danych diagnostycznych w UI i odpowiedziach.
+- [x] 2.3 W PL i EN potwierdzono zachowanie dotychczasowych komunikatów oraz braku dodatkowych danych diagnostycznych w UI i odpowiedziach. — 2a8c3f2
 
 ### Phase 3: Dowód przed/po i dokumentacja
 
 #### Automated
 
-- [ ] 3.1 Oba polecenia harnessu przechodzą: baseline pokazuje brak zdarzeń aplikacyjnych, after dokładnie jeden wpis dla każdej obsługiwanej awarii A1/H1, zero dla oczekiwanych stanów oraz zachowane HTTP/UI.
-- [ ] 3.2 Końcowe logi sond nie zawierają zasianych sekretów/PII; kontrolny wyjątek Auth zachowuje frameworkowe 500 bez dodatkowego duplikatu aplikacyjnego.
-- [ ] 3.3 `npm run lint`, `npm run test:unit`, `npm run test:interaction`, `npx astro check`, `npm run build` i `npx playwright test` przechodzą; brak trwających zmian sond w głównym kodzie.
+- [x] 3.1 Oba polecenia harnessu przechodzą: baseline pokazuje brak zdarzeń aplikacyjnych, after dokładnie jeden wpis dla każdej obsługiwanej awarii A1/H1, zero dla oczekiwanych stanów oraz zachowane HTTP/UI.
+- [x] 3.2 Końcowe logi sond nie zawierają zasianych sekretów/PII; kontrolny wyjątek Auth zachowuje frameworkowe 500 bez dodatkowego duplikatu aplikacyjnego.
+- [x] 3.3 `npm run lint`, `npm run test:unit`, `npm run test:interaction`, `npx astro check`, `npm run build` i `npx playwright test` przechodzą; brak trwających zmian sond w głównym kodzie.
 
 #### Manual
 
-- [ ] 3.4 Przejrzano dowód przed/po i potwierdzono, że changed dla A1/H1 nie oznacza zmiany HTTP ani zweryfikowanych alertów produkcyjnych.
+- [x] 3.4 Przejrzano dowód przed/po i potwierdzono, że changed dla A1/H1 nie oznacza zmiany HTTP ani zweryfikowanych alertów produkcyjnych.
